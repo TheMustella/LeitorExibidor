@@ -23,7 +23,7 @@ typedef struct {
     u2  outer_class_info_index;
     u2  inner_name_index;
     u2  inner_class_access_flags;
-} class_type_info;
+} classtype_info;
 
 /*
  * Estrutura exception_table_info: Componente da estrutura de Code_attribute
@@ -186,3 +186,8 @@ typedef struct {
     u2              attributes_count;
     attribute_info  attributes;
 }   ClassFile;
+
+int main(){
+
+    return 0;
+}
