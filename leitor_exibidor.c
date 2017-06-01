@@ -4,6 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define CONSTANT_CLASS 7
+#define CONSTANT_FIELDREF 9
+#define CONSTANT_METHOD 10
+#define CONSTANT_INTERFACE 11
+#define CONSTANT_NAMEANDTYPE 12
+#define CONSTANT_UTF8 1
+#define CONSTANT_STRING 8
+#define CONSTANT_INTEGER 3
+#define CONSTANT_FLOAT 4
+#define CONSTANT_LONG 5
+#define CONSTANT_DOUBLE 6
+
 // Especificando quantidades de bytes de acordo com nomes
 
 typedef uint8_t     u1;
@@ -228,12 +240,67 @@ ClassFile* readClass(FILE* fd){
     cf->major_version = u2Read(fd);
     cf->constant_pool_count = u2Read(fd);
     cf->constant_pool = (cp_info*) malloc(sizeof(cp_info)*(cf->constant_pool_count-1));
-    cp_info *cp_aux;
-    for(cp_aux = cf->constant_pool;cp_aux<cf->constant_pool+cf->constant_pool_count-1;++cp_aux) {
-        cp_aux->tag = u1Read(fd);
-        switch(cp_aux->tag) {
+    cp_info *cp;
+    for(cp = cf->constant_pool;cp<cf->constant_pool+cf->constant_pool_count-1;++cp) {
+        cp->tag = u1Read(fd);
+        switch(cp->tag) {
+            case CONSTANT_CLASS:
+                cp->info.CONSTANT_Class_info.name_index = u2Read(fd);
+            break;
+            case CONSTANT_FIELDREF:
+                cp->info.CONSTANT_Fieldref_info.class_index = u2Read(fd);
+                cp->info.CONSTANT_Fieldref_info.name_and_type_index = u2Read(fd);
+            break;
+            case CONSTANT_METHOD:
+                cp->info.CONSTANT_Method_info.class_index = u2Read(fd);
+                cp->info.CONSTANT_Method_info.name_and_type_index = u2Read(fd);
+            break;
+            case CONSTANT_INTERFACE:
+                cp->info.CONSTANT_Interface_info.class_index = u2Read(fd);
+                cp->info.CONSTANT_Interface_info.name_and_type_index = u2Read(fd);
+            break;
+            case CONSTANT_NAMEANDTYPE:
+                cp->info.CONSTANT_NameAndType_info.name_index = u2Read(fd);
+                cp->info.CONSTANT_NameAndType_info.descriptor_index = u2Read(fd);
+            break;
+            case CONSTANT_UTF8:
+                cp->info.CONSTANT_Utf8_info.length = u2Read(fd);
+                cp->info.CONSTANT_Utf8_info.bytes = (u1*)malloc(sizeof(u1)*cp->info.CONSTANT_Utf8_info.length);
+                u1* b;
+                for(b=cp->info.CONSTANT_Utf8_info.bytes;b<cp->info.CONSTANT_Utf8_info.bytes+cp->info.CONSTANT_Utf8_info.length,++b) {
+                    *b = u1Read(fd);
+                }
+            break;
+            case CONSTANT_STRING:
+                cp->info.CONSTANT_String_info.string_index = u2Read(fd);
+            break;
+            case CONSTANT_INTEGER:
+                cp->info.CONSTANT_Integer_info.bytes = u4Read(fd);
+            break;
+            case CONSTANT_FLOAT:
+                cp->info.CONSTANT_Float_info.bytes = u4Read(fd);
+            break;
+            case CONSTANT_LONG:
+                cp->info.CONSTANT_Long_info.high_bytes = u4Read(fd);
+                cp->info.CONSTANT_Long_info.low_bytes = u4Read(fd);
+            break;
+            case CONSTANT_DOUBLE:
+                cp->info.CONSTANT_Double_info.high_bytes = u4Read(fd);
+                cp->info.CONSTANT_Double_info.low_bytes = u4Read(fd);
+            break;
         }
     }
+    cf->access_flags = u2Read(fd);
+    cf->this_class = u2Read(fd);
+    cf->super_class = u2Read(fd);
+    cf->interfaces_count = u2Read(fd);
+    cf->interfaces = (u2*) malloc(sizeof(u2)*cf->interfaces_count);
+    u2* bytes;
+    for(bytes = cf->interfaces;bytes<cf->interfaces+cf->interfaces_count;++bytes) {
+        *bytes = u2Read(fd);
+    }
+    cf->fields_count = u2Read(fd);
+    
     return cf;
 }
 
