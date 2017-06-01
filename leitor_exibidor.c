@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -187,7 +189,62 @@ typedef struct {
     attribute_info  attributes;
 }   ClassFile;
 
-int main(){
+u2 u2Read(FILE *fd) {
+    u2 toReturn = 0;
+    u1 byte1,byte2;
+    fread(&byte1,sizeof(u1),1,fd);
+    fread(&byte2,sizeof(u1),1,fd);
+    toReturn = byte1<<8;
+    toReturn |= byte2;
+    return toReturn;
+}
 
+u4 u4Read(FILE *fd) {
+    u4 toReturn = u2Read(fd)<<16;
+    toReturn |= u2Read(fd);
+    return toReturn;
+}
+
+FILE* open_file(char *nomearquivo) {
+    FILE* fp = fopen(nomearquivo,"rb");
+    if(!fp){
+        printf("Erro: Arquivo não encontrado.\n");
+        return NULL;
+    } else {
+        return fp;
+    }
+}
+
+ClassFile* readClass(FILE* fd){
+    ClassFile* cf = (ClassFile*) malloc(sizeof(ClassFile));
+    cf->magic = u4Read(fd);
+    cf->minor_version = u2Read(fd);
+    cf->major_version = u2Read(fd);
+    cf->constant_pool_count = u2Read(fd);
+    return cf;
+}
+
+int main(int argc, char* argv[]){
+    char nomearquivo[1024];
+    FILE* fd = NULL;
+    if (argc == 1) {
+        do {
+            printf("Digite o nome do arquivo: ");
+            scanf("%s",nomearquivo);
+            fflush(stdin);
+            fd = open_file(nomearquivo);
+        } while(!fd);
+    } else if (argc == 2) {
+
+        strcpy(nomearquivo,argv[1]);
+
+    } else {
+        printf("Uso do programa: ./leitorexibidor [nome-do-class]\n");
+        return 0;
+    }
+
+    ClassFile* cf = readClass(fd);
+
+    fclose(fd);
     return 0;
 }
