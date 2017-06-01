@@ -189,7 +189,13 @@ typedef struct {
     attribute_info  attributes;
 }   ClassFile;
 
-u2 u2Read(FILE *fd) {
+u1 u1Read(FILE* fd) {
+    u1 byte;
+    fread(&byte,sizeof(u1),1,fd);
+    return byte;
+}
+
+u2 u2Read(FILE* fd) {
     u2 toReturn = 0;
     u1 byte1,byte2;
     fread(&byte1,sizeof(u1),1,fd);
@@ -199,7 +205,7 @@ u2 u2Read(FILE *fd) {
     return toReturn;
 }
 
-u4 u4Read(FILE *fd) {
+u4 u4Read(FILE* fd) {
     u4 toReturn = u2Read(fd)<<16;
     toReturn |= u2Read(fd);
     return toReturn;
@@ -221,6 +227,13 @@ ClassFile* readClass(FILE* fd){
     cf->minor_version = u2Read(fd);
     cf->major_version = u2Read(fd);
     cf->constant_pool_count = u2Read(fd);
+    cf->constant_pool = (cp_info*) malloc(sizeof(cp_info)*(cf->constant_pool_count-1));
+    cp_info *cp_aux;
+    for(cp_aux = cf->constant_pool;cp_aux<cf->constant_pool+cf->constant_pool_count-1;++cp_aux) {
+        cp_aux->tag = u1Read(fd);
+        switch(cp_aux->tag) {
+        }
+    }
     return cf;
 }
 
@@ -235,16 +248,13 @@ int main(int argc, char* argv[]){
             fd = open_file(nomearquivo);
         } while(!fd);
     } else if (argc == 2) {
-
         strcpy(nomearquivo,argv[1]);
 
     } else {
         printf("Uso do programa: ./leitorexibidor [nome-do-class]\n");
         return 0;
     }
-
     ClassFile* cf = readClass(fd);
-
     fclose(fd);
     return 0;
 }
