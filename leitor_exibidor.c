@@ -2,16 +2,39 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Especificando quantidades de bytes de acordo com nomes
+
 typedef uint8_t     u1;
 typedef uint16_t    u2;
 typedef uint32_t    u4;
+
+/*
+ * Estrutura class_type_info: Componente da estrutura de InnerClasses_attribute.
+ * Atributos:
+ *
+ *  inner_class_info_index (u2): Índice válido para constant_pool
+ *  outer_class_info_index (u2): Zero ou Índice válido para constant_pool
+ *  inner_name_index (u2): Zero ou Índice válido para constant_pool
+ *  inner_class_access_flags(u2): Máscara especificando permissões de acesso e propriedades da classe ou interface declaradas
+ * */
 
 typedef struct {
     u2  inner_class_info_index;
     u2  outer_class_info_index;
     u2  inner_name_index;
-    u2  inneer_class_access_flags;
-} class_type_info;
+    u2  inner_class_access_flags;
+} classtype_info;
+
+/*
+ * Estrutura exception_table_info: Componente da estrutura de Code_attribute
+ *
+ * Atributos:
+ *  
+ *  start_pc (u2):
+ *  end_pc (u2):
+ *  handler_pc (u2):
+ *  catch_type (u2):
+   */
 
 typedef struct {
     u2  start_pc;
@@ -27,7 +50,7 @@ typedef struct {
  *
  *  attribute_name_index(u2): índice válido para constant_pool;
  *  attribute_length(u4): Tamanho, em bytes, do restante do atributo;
- *  info(sizeof u1*): Atributo armazenado em bytes.
+ *  attribute_type(union): Armazena variaveis atributo-específicas.
  * */
 
 typedef struct _attribute_info {
@@ -163,3 +186,8 @@ typedef struct {
     u2              attributes_count;
     attribute_info  attributes;
 }   ClassFile;
+
+int main(){
+
+    return 0;
+}
