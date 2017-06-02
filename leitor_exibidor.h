@@ -239,4 +239,5 @@ ClassFile* readClass(FILE* fd);
 void load_attribute(attribute_info* att,ClassFile* cf,FILE* fd);
 void load_attributes(ClassFile* cf, FILE* fd);
 void load_methods(ClassFile* cf,FILE* fd);
+void print_class(ClassFile* cf,char* nomearquivo);
 #endif

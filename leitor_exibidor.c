@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "leitor_exibidor.h"
-#include "fileio.h"
+//#include "fileio.h"
 
 u1 u1Read(FILE* fd) {
     u1 byte;
@@ -380,15 +380,4 @@ void print_class(ClassFile* cf,char* nomearquivo) {
     // print_fields(cf);
     // print_methods(cf);
     // print_attributes(cf);
-}
-
-int main(int argc, char* argv[]){
-    char nomearquivo[1024];
-    FILE *fd = trata_entrada(argc, argv, nomearquivo);
-
-    ClassFile* cf = readClass(fd);
-    print_class(cf, nomearquivo);
-
-    fclose(fd);
-    return 0;
 }
