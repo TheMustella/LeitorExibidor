@@ -4,202 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define CONSTANT_CLASS 7
-#define CONSTANT_FIELDREF 9
-#define CONSTANT_METHOD 10
-#define CONSTANT_INTERFACE 11
-#define CONSTANT_NAMEANDTYPE 12
-#define CONSTANT_UTF8 1
-#define CONSTANT_STRING 8
-#define CONSTANT_INTEGER 3
-#define CONSTANT_FLOAT 4
-#define CONSTANT_LONG 5
-#define CONSTANT_DOUBLE 6
-
-// Especificando quantidades de bytes de acordo com nomes
-
-typedef uint8_t     u1;
-typedef uint16_t    u2;
-typedef uint32_t    u4;
-
-/*
- * Estrutura class_type_info: Componente da estrutura de InnerClasses_attribute.
- * Atributos:
- *
- *  inner_class_info_index (u2): Índice válido para constant_pool
- *  outer_class_info_index (u2): Zero ou Índice válido para constant_pool
- *  inner_name_index (u2): Zero ou Índice válido para constant_pool
- *  inner_class_access_flags(u2): Máscara especificando permissões de acesso e propriedades da classe ou interface declaradas
- * */
-
-typedef struct {
-    u2  inner_class_info_index;
-    u2  outer_class_info_index;
-    u2  inner_name_index;
-    u2  inner_class_access_flags;
-} classtype_info;
-
-/*
- * Estrutura exception_table_info: Componente da estrutura de Code_attribute
- *
- * Atributos:
- *  
- *  start_pc (u2):
- *  end_pc (u2):
- *  handler_pc (u2):
- *  catch_type (u2):
-   */
-
-typedef struct {
-    u2  start_pc;
-    u2  end_pc;
-    u2  handler_pc;
-    u2  catch_type;
-}   exception_table_info;
-
-/*
- * Estrutura attribute_info: Armazena dados de atributos nas estruturas ClassFile, field_info, method_info e code_attribute;
- * 
- * Atributos:
- *
- *  attribute_name_index(u2): índice válido para constant_pool;
- *  attribute_length(u4): Tamanho, em bytes, do restante do atributo;
- *  attribute_type(union): Armazena variaveis atributo-específicas.
- * */
-
-typedef struct _attribute_info {
-    u2  attribute_name_index;
-    u4  attribute_length;
-    union {
-        struct {
-            u2 constantvalue_index;
-        }   ConstantValue_attribute;
-        struct {
-            u2                      max_stack;
-            u2                      max_locals;
-            u4                      code_length;
-            u1*                     code;
-            u2                      exception_table_length;
-            exception_table_info*   exception_table;
-            u2  attrubutes_count;
-            struct _attribute_info* attributes;
-        }   Code_attribute;
-        struct {
-            u2  number_of_exceptions;
-            u2* exception_index_table;
-        }   Exceptions_attribute;
-        struct {
-            u2              number_of_classes;
-            classtype_info* classes;
-        }   InnerClasses_attribute;
-    }   attribute_type;
-}   attribute_info;
-
-/*
- * Estrutura field_info e method_info: Campos e métodos da classe
- *
- * Atributos:
- *
- *  access_flags (u2): Máscara que especifica permissões de acesso e propriedades do campo;
- *  name_index (u2): indice válido para constant_pool;
- *  descriptor_index (u2): indice válido para constant_pool;
- *  attribute_count (u2): Número de atributos do campo;
- *  attributes (sizeof attribute_info*): tabela de atributos do campo.
- * */
-
-typedef struct {
-    u2              access_flags;
-    u2              name_index;
-    u2              descriptor_index;
-    u2              attributes_count;
-    attribute_info* attributes;
-}   field_info, method_info;
-
-/*
- * Estrutura cp_info: Armazenam informações simbólicas;
- *
- * Atributos:
- *
- *  tag (u1): Define o tipo de informação;
- *  info (union): Armazena informação.
- *
- * */
-
-typedef struct {
-    u1  tag;
-    union {
-        struct {
-            u2  name_index;
-        }   CONSTANT_Class_info;
-        struct {
-            u2  class_index;
-            u2  name_and_type_index;
-        }   CONSTANT_Fieldref_info, CONSTANT_Method_info,   CONSTANT_Interface_info;
-        struct {
-            u2  name_index;
-            u2  descriptor_index;
-        }   CONSTANT_NameAndType_info;
-        struct {
-            u2  length;
-            u1* bytes;
-        }   CONSTANT_Utf8_info;
-        struct {
-            u2  string_index;
-        }   CONSTANT_String_info;
-        struct {
-            u4  bytes;
-        }   CONSTANT_Integer_info;
-        struct {
-            u4  bytes;
-        }   CONSTANT_Float_info;
-        struct {
-            u4  high_bytes;
-            u4  low_bytes;
-        }   CONSTANT_Long_info, CONSTANT_Double_info;
-    }   info;
-}   cp_info;
-
-
-/*
- * Estrutura ClassFile: Descrição de um arquivo .class
- *
- * Atributos:
- *
- *  magic (u4): assinatura do arquivo .class
- *  minor_version (u2) e major_version (u2): indicam versão do formato na forma major.minor
- *  constant_pool_count (u2): Número de entradas na tabela constant_pool+1
- *  constant_pool: tabela de estruturas
- *  access_flags: Máscara de bits que especifica permissões de acesso e propriedades da classe ou interface
- *  this_class: Representa classe ou interface definida pelo arquivo
- *  super_class: Representa super classe direta da classe definida
- *  interfaces_count: Número de entradas no array interfaces[]
- *  interfaces: Array de interfaces
- *  fields_count: Número de variaveis da classe ou de intancias declaradas nesta classe ou interfaces
- *  fields: tabela de fields
- *  method_count: Número de métodos na tabela
- *  methods: tabela métodos
- *  attributes_count: Número de estruturas na tabela attributes
- *  attributes: Tabela de estruturas do tipo attribute_info
- *
- * */
-typedef struct {
-    u4              magic;
-    u2              minor_version;
-    u2              major_version;
-    u2              constant_pool_count;
-    cp_info*        constant_pool;
-    u2              access_flags;
-    u2              this_class;
-    u2              super_class;
-    u2              interfaces_count;
-    u2*             interfaces;
-    u2              fields_count;
-    field_info*     fields;
-    u2              method_count;
-    method_info*    methods;
-    u2              attributes_count;
-    attribute_info  attributes;
-}   ClassFile;
+#include "leitor_exibidor.h"
 
 u1 u1Read(FILE* fd) {
     u1 byte;
@@ -233,75 +38,347 @@ FILE* open_file(char *nomearquivo) {
     }
 }
 
-ClassFile* readClass(FILE* fd){
-    ClassFile* cf = (ClassFile*) malloc(sizeof(ClassFile));
+void load_magic(ClassFile* cf,FILE* fd) {
     cf->magic = u4Read(fd);
+}
+
+void load_versions(ClassFile* cf,FILE* fd) {
     cf->minor_version = u2Read(fd);
     cf->major_version = u2Read(fd);
+}
+
+void load_constantpool(ClassFile* cf,FILE* fd) {
     cf->constant_pool_count = u2Read(fd);
     cf->constant_pool = (cp_info*) malloc(sizeof(cp_info)*(cf->constant_pool_count-1));
     cp_info *cp;
     for(cp = cf->constant_pool;cp<cf->constant_pool+cf->constant_pool_count-1;++cp) {
         cp->tag = u1Read(fd);
         switch(cp->tag) {
-            case CONSTANT_CLASS:
-                cp->info.CONSTANT_Class_info.name_index = u2Read(fd);
+            case CLASS:
+                cp->info.Class_info.name_index = u2Read(fd);
             break;
-            case CONSTANT_FIELDREF:
-                cp->info.CONSTANT_Fieldref_info.class_index = u2Read(fd);
-                cp->info.CONSTANT_Fieldref_info.name_and_type_index = u2Read(fd);
+            case FIELDREF:
+                cp->info.Fieldref_info.class_index = u2Read(fd);
+                cp->info.Fieldref_info.name_and_type_index = u2Read(fd);
             break;
-            case CONSTANT_METHOD:
-                cp->info.CONSTANT_Method_info.class_index = u2Read(fd);
-                cp->info.CONSTANT_Method_info.name_and_type_index = u2Read(fd);
+            case METHOD:
+                cp->info.Method_info.class_index = u2Read(fd);
+                cp->info.Method_info.name_and_type_index = u2Read(fd);
             break;
-            case CONSTANT_INTERFACE:
-                cp->info.CONSTANT_Interface_info.class_index = u2Read(fd);
-                cp->info.CONSTANT_Interface_info.name_and_type_index = u2Read(fd);
+            case INTERFACE:
+                cp->info.Interface_info.class_index = u2Read(fd);
+                cp->info.Interface_info.name_and_type_index = u2Read(fd);
             break;
-            case CONSTANT_NAMEANDTYPE:
-                cp->info.CONSTANT_NameAndType_info.name_index = u2Read(fd);
-                cp->info.CONSTANT_NameAndType_info.descriptor_index = u2Read(fd);
+            case NAMEANDTYPE:
+                cp->info.NameAndType_info.name_index = u2Read(fd);
+                cp->info.NameAndType_info.descriptor_index = u2Read(fd);
             break;
-            case CONSTANT_UTF8:
-                cp->info.CONSTANT_Utf8_info.length = u2Read(fd);
-                cp->info.CONSTANT_Utf8_info.bytes = (u1*)malloc(sizeof(u1)*cp->info.CONSTANT_Utf8_info.length);
+            case UTF8:
+                cp->info.Utf8_info.length = u2Read(fd);
+                cp->info.Utf8_info.bytes = (u1*)malloc(sizeof(u1)*cp->info.Utf8_info.length);
                 u1* b;
-                for(b=cp->info.CONSTANT_Utf8_info.bytes;b<cp->info.CONSTANT_Utf8_info.bytes+cp->info.CONSTANT_Utf8_info.length,++b) {
+                for(b=cp->info.Utf8_info.bytes;b<cp->info.Utf8_info.bytes+cp->info.Utf8_info.length;++b) {
                     *b = u1Read(fd);
                 }
             break;
-            case CONSTANT_STRING:
-                cp->info.CONSTANT_String_info.string_index = u2Read(fd);
+            case STRING:
+                cp->info.String_info.string_index = u2Read(fd);
             break;
-            case CONSTANT_INTEGER:
-                cp->info.CONSTANT_Integer_info.bytes = u4Read(fd);
+            case INTEGER:
+                cp->info.Integer_info.bytes = u4Read(fd);
             break;
-            case CONSTANT_FLOAT:
-                cp->info.CONSTANT_Float_info.bytes = u4Read(fd);
+            case FLOAT:
+                cp->info.Float_info.bytes = u4Read(fd);
             break;
-            case CONSTANT_LONG:
-                cp->info.CONSTANT_Long_info.high_bytes = u4Read(fd);
-                cp->info.CONSTANT_Long_info.low_bytes = u4Read(fd);
+            case LONG:
+                cp->info.Long_info.high_bytes = u4Read(fd);
+                cp->info.Long_info.low_bytes = u4Read(fd);
             break;
-            case CONSTANT_DOUBLE:
-                cp->info.CONSTANT_Double_info.high_bytes = u4Read(fd);
-                cp->info.CONSTANT_Double_info.low_bytes = u4Read(fd);
+            case DOUBLE:
+                cp->info.Double_info.high_bytes = u4Read(fd);
+                cp->info.Double_info.low_bytes = u4Read(fd);
             break;
         }
     }
+}
+
+void load_classdata(ClassFile* cf,FILE* fd) {
     cf->access_flags = u2Read(fd);
     cf->this_class = u2Read(fd);
     cf->super_class = u2Read(fd);
+}
+
+void load_interfaces(ClassFile* cf,FILE* fd) {
     cf->interfaces_count = u2Read(fd);
     cf->interfaces = (u2*) malloc(sizeof(u2)*cf->interfaces_count);
     u2* bytes;
     for(bytes = cf->interfaces;bytes<cf->interfaces+cf->interfaces_count;++bytes) {
         *bytes = u2Read(fd);
     }
+}
+
+int findtype(char* type) {
+    if(!strcmp(type,"ConstantValue")) {
+        return CONSTANTVALUE;
+    } else if(!strcmp(type,"Code")) {
+        return CODE;
+    } else if(!strcmp(type,"Exceptions")) {
+        return EXCEPTIONS;
+    } else if(!strcmp(type,"InnerClasses")) {
+        return INNERCLASSES;
+    } else {
+        return OTHER;
+    }
+}
+
+void load_constantvalue_attr(attribute_info* att, FILE* fd) {
+    att->type.ConstantValue.constantvalue_index = u2Read(fd);
+}
+
+void load_code_attr(attribute_info* att, ClassFile* cf,FILE* fd) {
+    att->type.Code.max_stack = u2Read(fd);
+    att->type.Code.max_locals = u2Read(fd);
+    att->type.Code.code_length = u4Read(fd);
+    att->type.Code.code = (u1*)malloc(sizeof(u1)*att->type.Code.code_length);
+    u1* byte;
+    for(byte=att->type.Code.code;byte<att->type.Code.code+att->type.Code.code_length;++byte) {
+        *byte = u2Read(fd);
+    }
+    att->type.Code.exception_table_length = u2Read(fd);
+    att->type.Code.exception_table = (exception_table_info*)malloc(sizeof(exception_table_info)*att->type.Code.exception_table_length);
+    exception_table_info* exp_aux;
+    for(exp_aux = att->type.Code.exception_table;exp_aux<att->type.Code.exception_table+att->type.Code.exception_table_length;++exp_aux) {
+        exp_aux->start_pc = u2Read(fd);
+        exp_aux->end_pc = u2Read(fd);
+        exp_aux->handler_pc = u2Read(fd);
+        exp_aux->catch_type = u2Read(fd);
+    }
+    att->type.Code.attributes_count = u2Read(fd);
+    att->type.Code.attributes = (attribute_info*)malloc(sizeof(attribute_info)*att->type.Code.attributes_count);
+    attribute_info* att_aux;
+    for(att_aux=att->type.Code.attributes;att_aux<att->type.Code.attributes+att->type.Code.attributes_count;++att_aux) {
+        load_attribute(att_aux,cf,fd);
+    }
+}
+
+void load_exceptions_attr(attribute_info* att,FILE* fd) {
+    att->type.Exceptions.number_of_exceptions = u2Read(fd);
+    att->type.Exceptions.exception_index_table = (u2*) malloc(sizeof(u2)*att->type.Exceptions.number_of_exceptions);
+    u2* bytes;
+    for(bytes = att->type.Exceptions.exception_index_table; bytes<att->type.Exceptions.exception_index_table+att->type.Exceptions.number_of_exceptions;++bytes) {
+        *bytes = u2Read(fd);
+    }
+}
+
+void load_innerclasses_attr(attribute_info* att,FILE* fd) {
+    att->type.InnerClasses.number_of_classes = u2Read(fd);
+    att->type.InnerClasses.classes = (classtype_info*) malloc(sizeof(classtype_info)*att->type.InnerClasses.number_of_classes);
+    classtype_info* classtype_aux;
+    for(classtype_aux = att->type.InnerClasses.classes;classtype_aux<att->type.InnerClasses.classes+att->type.InnerClasses.number_of_classes;++classtype_aux) {
+        classtype_aux->inner_class_info_index = u2Read(fd);
+        classtype_aux->outer_class_info_index = u2Read(fd);
+        classtype_aux->inner_name_index = u2Read(fd);
+        classtype_aux->inner_class_access_flags = u2Read(fd);
+    }
+}
+
+void load_other_attr(attribute_info* att, FILE* fd) {
+    att->type.Other.bytes = (u1*) malloc(sizeof(u1)*att->attribute_length);
+    u1* bytes;
+    for(bytes = att->type.Other.bytes;bytes<att->type.Other.bytes+att->attribute_length;++bytes) {
+        *bytes = u1Read(fd);
+    }
+}
+
+void load_attribute(attribute_info* att,ClassFile* cf,FILE* fd) {
+    char* type;
+    att->attribute_name_index = u2Read(fd);
+    att->attribute_length = u4Read(fd);
+    type = (char*)malloc(sizeof(char)*cf->constant_pool[att->attribute_name_index-1].info.Utf8_info.length);
+    strcpy(type,(char*)cf->constant_pool[att->attribute_name_index-1].info.Utf8_info.bytes);
+    int i=findtype(type);
+    switch(i) {
+        case CONSTANTVALUE:
+            load_constantvalue_attr(att,fd);
+        break;
+        case CODE:
+            load_code_attr(att,cf,fd);
+        break;
+        case EXCEPTIONS:
+            load_exceptions_attr(att,fd);
+        break;
+        case INNERCLASSES:
+            load_innerclasses_attr(att,fd);
+        break;
+        case OTHER:
+            load_other_attr(att,fd);
+        break;
+    }
+}
+
+void load_fields(ClassFile* cf,FILE* fd) {
     cf->fields_count = u2Read(fd);
-    
+    cf->fields = (field_info*)malloc(sizeof(field_info)*cf->fields_count);
+    field_info* field_aux;
+    for(field_aux = cf->fields;field_aux<cf->fields+cf->fields_count;++field_aux) {
+        field_aux->access_flags = u2Read(fd);
+        field_aux->name_index = u2Read(fd);
+        field_aux->descriptor_index = u2Read(fd);
+        field_aux->attributes_count = u2Read(fd);
+        field_aux->attributes = malloc(sizeof(attribute_info)*field_aux->attributes_count);
+        attribute_info* attribute_aux;
+        for(attribute_aux=field_aux->attributes;attribute_aux<field_aux->attributes+field_aux->attributes_count;++attribute_aux) {
+            load_attribute(attribute_aux,cf,fd);
+        }
+    }
+}
+
+void load_methods(ClassFile* cf,FILE* fd) {
+    cf->method_count = u2Read(fd);
+    cf->methods = (method_info*) malloc(sizeof(method_info)*cf->method_count);
+    method_info* method_aux;
+    for(method_aux = cf->methods;method_aux<cf->methods+cf->method_count;++method_aux) {
+        method_aux->access_flags = u2Read(fd);
+        method_aux->name_index = u2Read(fd);
+        method_aux->descriptor_index = u2Read(fd);
+        method_aux->attributes_count = u2Read(fd);
+        method_aux->attributes = (attribute_info*) malloc(sizeof(attribute_info)*method_aux->attributes_count);
+        attribute_info* att_aux;
+        for(att_aux = method_aux->attributes;att_aux<method_aux->attributes+method_aux->attributes_count;++att_aux) {
+            load_attribute(att_aux,cf,fd);
+        }
+    }
+}
+
+void load_attributes(ClassFile* cf, FILE* fd) {
+    cf->attributes_count = u2Read(fd);
+    cf->attributes = (attribute_info*) malloc(sizeof(attribute_info)*cf->attributes_count);
+    attribute_info* att_aux;
+    for(att_aux = cf->attributes;att_aux<cf->attributes+cf->attributes_count;++att_aux) {
+        load_attribute(att_aux,cf,fd);
+    }
+}
+
+ClassFile* readClass(FILE* fd) {
+    ClassFile* cf = (ClassFile*) malloc(sizeof(ClassFile));
+    load_magic(cf,fd);
+    load_versions(cf,fd);
+    load_constantpool(cf,fd);
+    load_classdata(cf,fd);
+    // load_interfaces(cf,fd);
+    // load_fields(cf,fd);
+    // load_methods(cf,fd);
+    // load_attributes(cf,fd);
     return cf;
+}
+
+void print_magic(ClassFile* cf) {
+    printf("MAGIC: %x\n",cf->magic);
+}
+
+void print_versions(ClassFile* cf) {
+    printf("VERSION:\n");
+    printf("\tMINOR: %d\n",cf->minor_version);
+    printf("\tMAJOR: %d\n\n",cf->major_version);
+}
+
+void print_constantpool(ClassFile* cf) {
+    long long Long;
+    printf("CONSTANT POOL COUNT: %d\n",cf->constant_pool_count);
+    printf("CONSTANT_POOL:\n");
+    cp_info* cp;
+    for(cp = cf->constant_pool;cp<cf->constant_pool+cf->constant_pool_count-1;++cp) {
+        switch(cp->tag) {
+            case CLASS:
+                printf("\tCP_INFO: CLASS\n");
+                printf("\tNAME_INDEX: %d\n\n",cp->info.Class_info.name_index);
+            break;
+            case FIELDREF:
+                printf("\tCP_INFO: FIELDREF\n");
+                printf("\tCLASS_INDEX: %d\n",cp->info.Fieldref_info.class_index);
+                printf("\tNAMEANDTYPE_INDEX: %d\n\n",cp->info.Fieldref_info.name_and_type_index);
+            break;
+            case METHOD:
+                printf("\tCP_INFO: METHOD\n");
+                printf("\tCLASS_INDEX: %d\n",cp->info.Method_info.class_index);
+                printf("\tNAMEANDTYPE_INDEX: %d\n\n",cp->info.Method_info.name_and_type_index);
+            break;
+            case INTERFACE:
+                printf("\tCP_INFO: INTERFACE\n");
+                printf("\tCLASS_INDEX: %d\n",cp->info.Interface_info.class_index);
+                printf("\tNAMEANDTYPE_INDEX: %d\n\n",cp->info.Interface_info.name_and_type_index);
+            break;
+            case NAMEANDTYPE:
+                printf("\tCP_INFO: NAMEANDTYPE\n");
+                printf("\tNAME_INDEX: %d\n",cp->info.NameAndType_info.name_index);
+                printf("\tDESCRIPTOR_INDEX: %d\n\n",cp->info.NameAndType_info.descriptor_index);
+            break;
+            case UTF8:
+                printf("\tCP_INFO: UTF8\n");
+                printf("\tLENGTH: %d\n",cp->info.Utf8_info.length);
+                printf("\tVALUE: %s\n\n",(char*)cp->info.Utf8_info.bytes);
+            break;
+            case STRING:
+                printf("\tCP_INFO: STRING\n");
+                printf("\tSTRING_INDEX: %d\n\n",cp->info.String_info.string_index);
+            break;
+            case INTEGER:
+                printf("\tCP_INFO: INTEGER\n");
+                printf("\tBYTES: %x\n",cp->info.Integer_info.bytes);
+                printf("\tVALUE: %d\n\n",cp->info.Integer_info.bytes);
+            break;
+            case FLOAT:
+                printf("\tCP_INFO: FLOAT\n");
+                printf("\tBYTES: %x\n",cp->info.Float_info.bytes);
+                u4tofloat.U4 = cp->info.Float_info.bytes;
+                printf("\tVALUE: %f\n\n",u4tofloat.Float);
+            break;
+            case LONG:
+                printf("\tCP_INFO: LONG\n");
+                printf("\tHIGH: %x\n",cp->info.Long_info.high_bytes);
+                printf("\tLOW: %x\n", cp->info.Long_info.low_bytes);
+                Long = ((long long) cp->info.Long_info.high_bytes << 32) | (cp->info.Long_info.low_bytes);
+                printf("\tVALUE: %lld\n\n",Long);
+            break;
+            case DOUBLE:
+                printf("\tCP_INFO: DOUBLE\n");
+                printf("\tHIGH: %x\n",cp->info.Double_info.high_bytes);
+                printf("\tLOW: %x\n", cp->info.Double_info.low_bytes);
+                Long = ((long long) cp->info.Double_info.high_bytes << 32) | (cp->info.Double_info.low_bytes);
+                printf("\tVALUE: %lld\n\n",Long);
+            break;
+        }
+    }
+
+}
+
+void print_classdata(ClassFile* cf) {
+    printf("ACCESS_FLAGS: %x\n",cf->access_flags);
+    printf("THIS_CLASS: %d\n",cf->this_class);
+    printf("SUPER_CLASS: %d\n\n",cf->super_class);
+}
+
+void print_interfaces(ClassFile* cf) {
+    printf("INTERFACES_COUNT: %d\n",cf->interfaces_count);
+    printf("INTERFACES:\n");
+    u2* interface_aux;
+    for(interface_aux = cf->interfaces;interface_aux<cf->interfaces+cf->interfaces_count;++interface_aux) {
+        printf("\tINTERFACE: %d\n",*interface_aux);
+    }
+}
+
+
+
+void print_class(ClassFile* cf,char* nomearquivo) {
+    printf("Nome do .class: %s\n",nomearquivo);
+    print_magic(cf);
+    print_versions(cf);
+    print_constantpool(cf);
+    print_classdata(cf);
+    // print_interfaces(cf);
+    // print_fields(cf);
+    // print_methods(cf);
+    // print_attributes(cf);
 }
 
 int main(int argc, char* argv[]){
@@ -322,6 +399,9 @@ int main(int argc, char* argv[]){
         return 0;
     }
     ClassFile* cf = readClass(fd);
+
+    print_class(cf, nomearquivo);
+
     fclose(fd);
     return 0;
 }
