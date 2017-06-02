@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "leitor_exibidor.h"
+#include "fileio.h"
 
 u1 u1Read(FILE* fd) {
     u1 byte;
@@ -383,24 +384,9 @@ void print_class(ClassFile* cf,char* nomearquivo) {
 
 int main(int argc, char* argv[]){
     char nomearquivo[1024];
-    FILE* fd = NULL;
-    if (argc == 1) {
-        do {
-            printf("Digite o nome do arquivo: ");
-            scanf("%s",nomearquivo);
-            fflush(stdin);
-            fd = open_file(nomearquivo);
-        } while(!fd);
-    } else if (argc == 2) {
-        strcpy(nomearquivo,argv[1]);
-        fd = open_file(nomearquivo);
+    FILE *fd = trata_entrada(argc, argv, nomearquivo);
 
-    } else {
-        printf("Uso do programa: ./leitorexibidor [nome-do-class]\n");
-        return 0;
-    }
     ClassFile* cf = readClass(fd);
-
     print_class(cf, nomearquivo);
 
     fclose(fd);

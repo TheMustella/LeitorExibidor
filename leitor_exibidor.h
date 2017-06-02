@@ -1,3 +1,5 @@
+#include "fileio.h"
+
 #ifndef LEITOR_EXIBIDOR_H
 #define LEITOR_EXIBIDOR_H
     

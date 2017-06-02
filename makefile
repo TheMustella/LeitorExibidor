@@ -8,11 +8,15 @@ endif
 
 all: leitor
 
-leitor: leitor_exibidor.o
-	gcc $(CFLAGS) leitor_exibidor.o -o ltex
+leitor: leitor_exibidor.o fileio.o
+	gcc $(CFLAGS) leitor_exibidor.o fileio.o -o leitorexibidor
 
 leitor_exibidor.o: leitor_exibidor.c
 	gcc $(CFLAGS) -c leitor_exibidor.c
+
+fileio.o: fileio.c
+	gcc $(CFLAGS) -c fileio.c
+
 
 clean:
 	find . -name '*.o' -exec rm '{}' \;
