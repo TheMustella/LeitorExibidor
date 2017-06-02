@@ -12,11 +12,13 @@
 
 int main(int argc, char* argv[]){
     char nomearquivo[1024];
-    FILE *fd = trata_entrada(argc, argv, nomearquivo);
+    FILE *clFile = trata_entrada(argc, argv, nomearquivo);
+    FILE *fdout = open_output_file("output.txt");
 
-    ClassFile* cf = readClass(fd);
-    print_class(cf, nomearquivo);
-
-    fclose(fd);
+    ClassFile* cf = readClass(clFile);
+    print_class(cf, nomearquivo, fdout);
+    
+    //shutdown();
+    fclose(clFile);
     return 0;
 }
