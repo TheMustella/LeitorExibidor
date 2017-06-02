@@ -219,9 +219,6 @@ typedef struct {
     attribute_info* attributes;
 }   ClassFile;
 
-u1 u1Read(FILE* fd);
-u2 u2Read(FILE* fd);
-u4 u4Read(FILE* fd);
 FILE* open_file(char *nomearquivo);
 void load_magic(ClassFile* cf,FILE* fd);
 void load_versions(ClassFile* cf,FILE* fd);
@@ -239,5 +236,4 @@ ClassFile* readClass(FILE* fd);
 void load_attribute(attribute_info* att,ClassFile* cf,FILE* fd);
 void load_attributes(ClassFile* cf, FILE* fd);
 void load_methods(ClassFile* cf,FILE* fd);
-void print_class(ClassFile* cf,char* nomearquivo);
 #endif

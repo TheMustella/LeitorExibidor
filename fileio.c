@@ -1,3 +1,10 @@
+/*
+ * Arquivo fileio
+ *
+ * Objetivo principal: Cuidar da manipulacao de arquivos.
+ *
+ * */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

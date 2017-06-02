@@ -1,6 +1,14 @@
+/*
+ * Arquivo main.c 
+ *
+ * Objetivo principal cuidar da inicializacao e encerramento do programa.
+ *
+ * */
+
 #include <stdint.h>
 #include "leitor_exibidor.h"
 #include "fileio.h"
+#include "exibidor.h"
 
 int main(int argc, char* argv[]){
     char nomearquivo[1024];
