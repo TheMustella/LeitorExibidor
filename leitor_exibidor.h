@@ -20,6 +20,28 @@
 #define INNERCLASSES 3
 #define OTHER 4
 
+//Defines para o campo access_flags de field_info
+#define FIELD_ACC_PUBLIC      0x0001
+#define FIELD_ACC_PRIVATE     0x0002
+#define FIELD_ACC_PROTECTED   0x0004
+#define FIELD_ACC_STATIC      0x0008
+#define FIELD_ACC_FINAL       0x0010
+#define FIELD_ACC_VOLATILE    0x0040
+#define FIELD_ACC_TRANSIENT   0x0080
+
+
+//Defines para o campo access_flags de method_info
+#define METHOD_ACC_PUBLIC       0x0001
+#define METHOD_ACC_PRIVATE      0x0002
+#define METHOD_ACC_PROTECTED    0x0004
+#define METHOD_ACC_STATIC       0x0008
+#define METHOD_ACC_FINAL        0x0010
+#define METHOD_ACC_SYNCHRONIZED 0x0020
+#define METHOD_ACC_NATIVE       0x0100
+#define METHOD_ACC_INTERFACE    0x0200    //Atributo InnerClasses
+#define METHOD_ACC_ABSTRACT     0x0400
+#define METHOD_ACC_STRICT       0x0800
+
 // Especificando quantidades de bytes de acordo com nomes
 
 typedef uint8_t     u1;
@@ -125,8 +147,9 @@ typedef struct _attribute_info {
  *  attributes (sizeof attribute_info*): tabela de atributos do campo.
  * */
 
+
 typedef struct {
-    u2              access_flags;
+    u2              access_flags;     // Ver defines
     u2              name_index;
     u2              descriptor_index;
     u2              attributes_count;
