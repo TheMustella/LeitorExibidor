@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
+
 #ifndef LEITOR_EXIBIDOR_H
 #define LEITOR_EXIBIDOR_H
     
