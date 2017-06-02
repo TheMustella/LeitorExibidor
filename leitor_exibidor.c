@@ -393,6 +393,7 @@ int main(int argc, char* argv[]){
         } while(!fd);
     } else if (argc == 2) {
         strcpy(nomearquivo,argv[1]);
+        fd = open_file(nomearquivo);
 
     } else {
         printf("Uso do programa: ./leitorexibidor [nome-do-class]\n");
