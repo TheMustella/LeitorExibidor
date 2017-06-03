@@ -1,35 +1,28 @@
 #include "leitor_exibidor.h"
+#include "util.h"
 
-u1 u1Read(FILE* fd) {
-    u1 byte;
-    fread(&byte,sizeof(u1),1,fd);
-    return byte;
-}
-
-u2 u2Read(FILE* fd) {
-    u2 toReturn = 0;
-    u1 byte1,byte2;
-    fread(&byte1,sizeof(u1),1,fd);
-    fread(&byte2,sizeof(u1),1,fd);
-    toReturn = byte1<<8;
-    toReturn |= byte2;
-    return toReturn;
-}
-
-u4 u4Read(FILE* fd) {
-    u4 toReturn = u2Read(fd)<<16;
-    toReturn |= u2Read(fd);
-    return toReturn;
-}
-
-FILE* open_file(char *nomearquivo) {
-    FILE* fp = fopen(nomearquivo,"rb");
-    if(!fp){
-        printf("Erro: Arquivo não encontrado.\n");
-        return NULL;
-    } else {
-        return fp;
+void free_cte_pool(ClassFile *cf) {
+    cp_info *cp;
+    for(cp = cf->constant_pool;cp<cf->constant_pool+cf->constant_pool_count-1;++cp) {
+       if (cp->tag == UTF8)
+         free(cp->info.Utf8_info.bytes);
     }
+    free(cf->constant_pool);
+}
+
+void free_clFile(ClassFile *cf) {
+  if (!cf)
+    return;
+  free_cte_pool(cf);
+  if (cf->fields)
+    free(cf->fields);
+  if (cf->interfaces)
+    free(cf->interfaces);
+  /*if (cf->methods)
+    free(cf->methods);
+  if (cf->attributes)
+    free(cf->attributes);*/
+  free(cf);
 }
 
 void load_magic(ClassFile* cf,FILE* fd) {
@@ -46,7 +39,7 @@ void load_versions(ClassFile* cf,FILE* fd) {
 
 void load_constantpool(ClassFile* cf,FILE* fd) {
     cf->constant_pool_count = u2Read(fd);
-    cf->constant_pool = (cp_info*) malloc(sizeof(cp_info)*(cf->constant_pool_count-1));
+    cf->constant_pool = (cp_info*) calloc((cf->constant_pool_count-1),sizeof(cp_info));
     cp_info *cp;
     for(cp = cf->constant_pool;cp<cf->constant_pool+cf->constant_pool_count-1;++cp) {
         cp->tag = u1Read(fd);
@@ -72,7 +65,7 @@ void load_constantpool(ClassFile* cf,FILE* fd) {
             break;
             case UTF8:
                 cp->info.Utf8_info.length = u2Read(fd);
-                cp->info.Utf8_info.bytes = (u1*)malloc(sizeof(u1)*cp->info.Utf8_info.length); //length diz o numero de bytes UTF8 desse cp_info
+                cp->info.Utf8_info.bytes = (u1*)calloc(cp->info.Utf8_info.length,sizeof(u1)); //length diz o numero de bytes UTF8 desse cp_info
                 u1* b;
                 for(b=cp->info.Utf8_info.bytes ; b < cp->info.Utf8_info.bytes + cp->info.Utf8_info.length ; ++b) { //laco para leitura desses bytes
                     *b = u1Read(fd);
@@ -107,7 +100,7 @@ void load_classdata(ClassFile* cf,FILE* fd) {
 
 void load_interfaces(ClassFile* cf,FILE* fd) {
     cf->interfaces_count = u2Read(fd);
-    cf->interfaces = (u2*) malloc(sizeof(u2)*cf->interfaces_count);
+    cf->interfaces = (u2*) calloc(cf->interfaces_count,sizeof(u2));
     u2* bytes;
     for(bytes = cf->interfaces;bytes<cf->interfaces+cf->interfaces_count;++bytes) {
         *bytes = u2Read(fd);
@@ -215,14 +208,14 @@ void load_attribute(attribute_info* att,ClassFile* cf,FILE* fd) {
 
 void load_fields(ClassFile* cf,FILE* fd) {
     cf->fields_count = u2Read(fd);
-    cf->fields = (field_info*)malloc(sizeof(field_info)*cf->fields_count);
+    cf->fields = (field_info*)calloc(cf->fields_count,sizeof(field_info));
     field_info* field_aux;
     for(field_aux = cf->fields;field_aux<cf->fields+cf->fields_count;++field_aux) {
         field_aux->access_flags = u2Read(fd);
         field_aux->name_index = u2Read(fd);
         field_aux->descriptor_index = u2Read(fd);
         field_aux->attributes_count = u2Read(fd);
-        field_aux->attributes = malloc(sizeof(attribute_info)*field_aux->attributes_count);
+        field_aux->attributes = calloc(field_aux->attributes_count,sizeof(attribute_info));
         attribute_info* attribute_aux;
         for(attribute_aux=field_aux->attributes;attribute_aux<field_aux->attributes+field_aux->attributes_count;++attribute_aux) {
             load_attribute(attribute_aux,cf,fd);
@@ -262,143 +255,9 @@ ClassFile* readClass(FILE* fd) {
     load_versions(cf,fd);
     load_constantpool(cf,fd);
     load_classdata(cf,fd);
-    // load_interfaces(cf,fd);
-    // load_fields(cf,fd);
-    // load_methods(cf,fd);
-    // load_attributes(cf,fd);
+    load_interfaces(cf,fd);
+    load_fields(cf,fd);
+    //load_methods(cf,fd);
+    //load_attributes(cf,fd);
     return cf;
-}
-
-void print_magic(ClassFile* cf) {
-    printf("MAGIC: %x\n",cf->magic);
-}
-
-void print_versions(ClassFile* cf) {
-    printf("VERSION:\n");
-    printf("\tMINOR: %d\n",cf->minor_version);
-    printf("\tMAJOR: %d\n\n",cf->major_version);
-}
-
-void print_constantpool(ClassFile* cf) {
-    long long Long;
-    printf("CONSTANT POOL COUNT: %d\n",cf->constant_pool_count);
-    printf("CONSTANT_POOL:\n");
-    cp_info* cp;
-    for(cp = cf->constant_pool;cp<cf->constant_pool+cf->constant_pool_count-1;++cp) {
-        switch(cp->tag) {
-            case CLASS:
-                printf("\tCP_INFO: CLASS\n");
-                printf("\tNAME_INDEX: %d\n\n",cp->info.Class_info.name_index);
-            break;
-            case FIELDREF:
-                printf("\tCP_INFO: FIELDREF\n");
-                printf("\tCLASS_INDEX: %d\n",cp->info.Fieldref_info.class_index);
-                printf("\tNAMEANDTYPE_INDEX: %d\n\n",cp->info.Fieldref_info.name_and_type_index);
-            break;
-            case METHOD:
-                printf("\tCP_INFO: METHOD\n");
-                printf("\tCLASS_INDEX: %d\n",cp->info.Method_info.class_index);
-                printf("\tNAMEANDTYPE_INDEX: %d\n\n",cp->info.Method_info.name_and_type_index);
-            break;
-            case INTERFACE:
-                printf("\tCP_INFO: INTERFACE\n");
-                printf("\tCLASS_INDEX: %d\n",cp->info.Interface_info.class_index);
-                printf("\tNAMEANDTYPE_INDEX: %d\n\n",cp->info.Interface_info.name_and_type_index);
-            break;
-            case NAMEANDTYPE:
-                printf("\tCP_INFO: NAMEANDTYPE\n");
-                printf("\tNAME_INDEX: %d\n",cp->info.NameAndType_info.name_index);
-                printf("\tDESCRIPTOR_INDEX: %d\n\n",cp->info.NameAndType_info.descriptor_index);
-            break;
-            case UTF8:
-                printf("\tCP_INFO: UTF8\n");
-                printf("\tLENGTH: %d\n",cp->info.Utf8_info.length);
-                printf("\tVALUE: %s\n\n",(char*)cp->info.Utf8_info.bytes);
-            break;
-            case STRING:
-                printf("\tCP_INFO: STRING\n");
-                printf("\tSTRING_INDEX: %d\n\n",cp->info.String_info.string_index);
-            break;
-            case INTEGER:
-                printf("\tCP_INFO: INTEGER\n");
-                printf("\tBYTES: %x\n",cp->info.Integer_info.bytes);
-                printf("\tVALUE: %d\n\n",cp->info.Integer_info.bytes);
-            break;
-            case FLOAT:
-                printf("\tCP_INFO: FLOAT\n");
-                printf("\tBYTES: %x\n",cp->info.Float_info.bytes);
-                u4tofloat.U4 = cp->info.Float_info.bytes;
-                printf("\tVALUE: %f\n\n",u4tofloat.Float);
-            break;
-            case LONG:
-                printf("\tCP_INFO: LONG\n");
-                printf("\tHIGH: %x\n",cp->info.Long_info.high_bytes);
-                printf("\tLOW: %x\n", cp->info.Long_info.low_bytes);
-                Long = ((long long) cp->info.Long_info.high_bytes << 32) | (cp->info.Long_info.low_bytes);
-                printf("\tVALUE: %lld\n\n",Long);
-            break;
-            case DOUBLE:
-                printf("\tCP_INFO: DOUBLE\n");
-                printf("\tHIGH: %x\n",cp->info.Double_info.high_bytes);
-                printf("\tLOW: %x\n", cp->info.Double_info.low_bytes);
-                Long = ((long long) cp->info.Double_info.high_bytes << 32) | (cp->info.Double_info.low_bytes);
-                printf("\tVALUE: %lld\n\n",Long);
-            break;
-        }
-    }
-
-}
-
-void print_classdata(ClassFile* cf) {
-    printf("ACCESS_FLAGS: %x\n",cf->access_flags);
-    printf("THIS_CLASS: %d\n",cf->this_class);
-    printf("SUPER_CLASS: %d\n\n",cf->super_class);
-}
-
-void print_interfaces(ClassFile* cf) {
-    printf("INTERFACES_COUNT: %d\n",cf->interfaces_count);
-    printf("INTERFACES:\n");
-    u2* interface_aux;
-    for(interface_aux = cf->interfaces;interface_aux<cf->interfaces+cf->interfaces_count;++interface_aux) {
-        printf("\tINTERFACE: %d\n",*interface_aux);
-    }
-}
-
-
-
-void print_class(ClassFile* cf,char* nomearquivo) {
-    printf("Nome do .class: %s\n",nomearquivo);
-    print_magic(cf);
-    print_versions(cf);
-    print_constantpool(cf);
-    print_classdata(cf);
-    // print_interfaces(cf);
-    // print_fields(cf);
-    // print_methods(cf);
-    // print_attributes(cf);
-}
-
-int main(int argc, char* argv[]){
-    char nomearquivo[1024];
-    FILE* fd = NULL;
-    if (argc == 1) {
-        do {
-            printf("Digite o nome do arquivo: ");
-            scanf("%s",nomearquivo);
-            fflush(stdin);
-            fd = open_file(nomearquivo);
-        } while(!fd);
-    } else if (argc == 2) {
-        strcpy(nomearquivo,argv[1]);
-
-    } else {
-        printf("Uso do programa: ./leitorexibidor [nome-do-class]\n");
-        return 0;
-    }
-    ClassFile* cf = readClass(fd);
-
-    print_class(cf, nomearquivo);
-
-    fclose(fd);
-    return 0;
 }

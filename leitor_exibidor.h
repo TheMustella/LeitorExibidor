@@ -1,28 +1,52 @@
+#include "fileio.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
+
 #ifndef LEITOR_EXIBIDOR_H
 #define LEITOR_EXIBIDOR_H
     
-#define CLASS 7
-#define FIELDREF 9
-#define METHOD 10
-#define INTERFACE 11
-#define NAMEANDTYPE 12
-#define UTF8 1
-#define STRING 8
-#define INTEGER 3
-#define FLOAT 4
-#define LONG 5
-#define DOUBLE 6
-#define CONSTANTVALUE 0
-#define CODE 1
-#define EXCEPTIONS 2
-#define INNERCLASSES 3
-#define OTHER 4
+#define CLASS           7
+#define FIELDREF        9
+#define METHOD          10
+#define INTERFACE       11
+#define NAMEANDTYPE     12
+#define UTF8            1
+#define STRING          8
+#define INTEGER         3
+#define FLOAT           4
+#define LONG            5
+#define DOUBLE          6
+#define CONSTANTVALUE   0
+#define CODE            1
+#define EXCEPTIONS      2
+#define INNERCLASSES    3
+#define OTHER           4
+
+//Defines para o campo access_flags de field_info
+#define FIELD_ACC_PUBLIC      0x0001
+#define FIELD_ACC_PRIVATE     0x0002
+#define FIELD_ACC_PROTECTED   0x0004
+#define FIELD_ACC_STATIC      0x0008
+#define FIELD_ACC_FINAL       0x0010
+#define FIELD_ACC_VOLATILE    0x0040
+#define FIELD_ACC_TRANSIENT   0x0080
+
+
+//Defines para o campo access_flags de method_info
+#define METHOD_ACC_PUBLIC       0x0001
+#define METHOD_ACC_PRIVATE      0x0002
+#define METHOD_ACC_PROTECTED    0x0004
+#define METHOD_ACC_STATIC       0x0008
+#define METHOD_ACC_FINAL        0x0010
+#define METHOD_ACC_SYNCHRONIZED 0x0020
+#define METHOD_ACC_NATIVE       0x0100
+#define METHOD_ACC_INTERFACE    0x0200    //Atributo InnerClasses
+#define METHOD_ACC_ABSTRACT     0x0400
+#define METHOD_ACC_STRICT       0x0800
 
 // Especificando quantidades de bytes de acordo com nomes
 
@@ -129,8 +153,9 @@ typedef struct _attribute_info {
  *  attributes (sizeof attribute_info*): tabela de atributos do campo.
  * */
 
+
 typedef struct {
-    u2              access_flags;
+    u2              access_flags;     // Ver defines
     u2              name_index;
     u2              descriptor_index;
     u2              attributes_count;
@@ -223,10 +248,8 @@ typedef struct {
     attribute_info* attributes;
 }   ClassFile;
 
-u1 u1Read(FILE* fd);
-u2 u2Read(FILE* fd);
-u4 u4Read(FILE* fd);
-FILE* open_file(char *nomearquivo);
+void free_clFile(ClassFile *cf);
+//FILE* open_file(char *nomearquivo);
 void load_magic(ClassFile* cf,FILE* fd);
 void load_versions(ClassFile* cf,FILE* fd);
 void load_constantpool(ClassFile* cf,FILE* fd);
