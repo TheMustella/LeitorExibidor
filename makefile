@@ -30,8 +30,3 @@ fileio.o: fileio.c
 clean:
 	find . -name '*.o' -exec rm '{}' \;
 	find . -name 'leitorexibidor' -exec rm '{}' \;
-
-#prog:
-#@gcc -Wall -std=c99 experiencias.c -o exe
-
-#@rm -f exe
