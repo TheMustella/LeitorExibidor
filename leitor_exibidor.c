@@ -1,14 +1,11 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "leitor_exibidor.h"
 #include "util.h"
 
 void load_magic(ClassFile* cf,FILE* fd) {
     cf->magic = u4Read(fd);
+    /*if (cf->magic != 0xcafebabe)
+		EXIT; //arquivo não eh .class
+    */
 }
 
 void load_versions(ClassFile* cf,FILE* fd) {
@@ -44,9 +41,9 @@ void load_constantpool(ClassFile* cf,FILE* fd) {
             break;
             case UTF8:
                 cp->info.Utf8_info.length = u2Read(fd);
-                cp->info.Utf8_info.bytes = (u1*)malloc(sizeof(u1)*cp->info.Utf8_info.length);
+                cp->info.Utf8_info.bytes = (u1*)malloc(sizeof(u1)*cp->info.Utf8_info.length); //length diz o numero de bytes UTF8 desse cp_info
                 u1* b;
-                for(b=cp->info.Utf8_info.bytes;b<cp->info.Utf8_info.bytes+cp->info.Utf8_info.length;++b) {
+                for(b=cp->info.Utf8_info.bytes ; b < cp->info.Utf8_info.bytes + cp->info.Utf8_info.length ; ++b) { //laco para leitura desses bytes
                     *b = u1Read(fd);
                 }
             break;
@@ -60,11 +57,11 @@ void load_constantpool(ClassFile* cf,FILE* fd) {
                 cp->info.Float_info.bytes = u4Read(fd);
             break;
             case LONG:
-                cp->info.Long_info.high_bytes = u4Read(fd);
+                cp->info.Long_info.high_bytes = u4Read(fd); //estrutura de 64 bytes
                 cp->info.Long_info.low_bytes = u4Read(fd);
             break;
             case DOUBLE:
-                cp->info.Double_info.high_bytes = u4Read(fd);
+                cp->info.Double_info.high_bytes = u4Read(fd); //estrutura de 64 bytes
                 cp->info.Double_info.low_bytes = u4Read(fd);
             break;
         }
