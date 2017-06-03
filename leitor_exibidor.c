@@ -1,6 +1,30 @@
 #include "leitor_exibidor.h"
 #include "util.h"
 
+void free_cte_pool(ClassFile *cf) {
+    cp_info *cp;
+    for(cp = cf->constant_pool;cp<cf->constant_pool+cf->constant_pool_count-1;++cp) {
+       if (cp->tag == UTF8)
+         free(cp->info.Utf8_info.bytes);
+    }
+    free(cf->constant_pool);
+}
+
+void free_clFile(ClassFile *cf) {
+  if (!cf)
+    return;
+  free_cte_pool(cf);
+  if (cf->fields)
+    free(cf->fields);
+  if (cf->interfaces)
+    free(cf->interfaces);
+  /*if (cf->methods)
+    free(cf->methods);
+  if (cf->attributes)
+    free(cf->attributes);*/
+  free(cf);
+}
+
 void load_magic(ClassFile* cf,FILE* fd) {
     cf->magic = u4Read(fd);
     /*if (cf->magic != 0xcafebabe)
@@ -15,7 +39,7 @@ void load_versions(ClassFile* cf,FILE* fd) {
 
 void load_constantpool(ClassFile* cf,FILE* fd) {
     cf->constant_pool_count = u2Read(fd);
-    cf->constant_pool = (cp_info*) malloc(sizeof(cp_info)*(cf->constant_pool_count-1));
+    cf->constant_pool = (cp_info*) calloc((cf->constant_pool_count-1),sizeof(cp_info));
     cp_info *cp;
     for(cp = cf->constant_pool;cp<cf->constant_pool+cf->constant_pool_count-1;++cp) {
         cp->tag = u1Read(fd);
@@ -41,7 +65,7 @@ void load_constantpool(ClassFile* cf,FILE* fd) {
             break;
             case UTF8:
                 cp->info.Utf8_info.length = u2Read(fd);
-                cp->info.Utf8_info.bytes = (u1*)malloc(sizeof(u1)*cp->info.Utf8_info.length); //length diz o numero de bytes UTF8 desse cp_info
+                cp->info.Utf8_info.bytes = (u1*)calloc(cp->info.Utf8_info.length,sizeof(u1)); //length diz o numero de bytes UTF8 desse cp_info
                 u1* b;
                 for(b=cp->info.Utf8_info.bytes ; b < cp->info.Utf8_info.bytes + cp->info.Utf8_info.length ; ++b) { //laco para leitura desses bytes
                     *b = u1Read(fd);
@@ -76,7 +100,7 @@ void load_classdata(ClassFile* cf,FILE* fd) {
 
 void load_interfaces(ClassFile* cf,FILE* fd) {
     cf->interfaces_count = u2Read(fd);
-    cf->interfaces = (u2*) malloc(sizeof(u2)*cf->interfaces_count);
+    cf->interfaces = (u2*) calloc(cf->interfaces_count,sizeof(u2));
     u2* bytes;
     for(bytes = cf->interfaces;bytes<cf->interfaces+cf->interfaces_count;++bytes) {
         *bytes = u2Read(fd);
@@ -184,14 +208,14 @@ void load_attribute(attribute_info* att,ClassFile* cf,FILE* fd) {
 
 void load_fields(ClassFile* cf,FILE* fd) {
     cf->fields_count = u2Read(fd);
-    cf->fields = (field_info*)malloc(sizeof(field_info)*cf->fields_count);
+    cf->fields = (field_info*)calloc(cf->fields_count,sizeof(field_info));
     field_info* field_aux;
     for(field_aux = cf->fields;field_aux<cf->fields+cf->fields_count;++field_aux) {
         field_aux->access_flags = u2Read(fd);
         field_aux->name_index = u2Read(fd);
         field_aux->descriptor_index = u2Read(fd);
         field_aux->attributes_count = u2Read(fd);
-        field_aux->attributes = malloc(sizeof(attribute_info)*field_aux->attributes_count);
+        field_aux->attributes = calloc(field_aux->attributes_count,sizeof(attribute_info));
         attribute_info* attribute_aux;
         for(attribute_aux=field_aux->attributes;attribute_aux<field_aux->attributes+field_aux->attributes_count;++attribute_aux) {
             load_attribute(attribute_aux,cf,fd);
@@ -231,9 +255,9 @@ ClassFile* readClass(FILE* fd) {
     load_versions(cf,fd);
     load_constantpool(cf,fd);
     load_classdata(cf,fd);
-    // load_interfaces(cf,fd);
-    // load_fields(cf,fd);
-    // load_methods(cf,fd);
-    // load_attributes(cf,fd);
+    load_interfaces(cf,fd);
+    load_fields(cf,fd);
+    //load_methods(cf,fd);
+    //load_attributes(cf,fd);
     return cf;
 }

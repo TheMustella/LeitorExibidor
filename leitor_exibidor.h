@@ -9,22 +9,22 @@
 #ifndef LEITOR_EXIBIDOR_H
 #define LEITOR_EXIBIDOR_H
     
-#define CLASS 7
-#define FIELDREF 9
-#define METHOD 10
-#define INTERFACE 11
-#define NAMEANDTYPE 12
-#define UTF8 1
-#define STRING 8
-#define INTEGER 3
-#define FLOAT 4
-#define LONG 5
-#define DOUBLE 6
-#define CONSTANTVALUE 0
-#define CODE 1
-#define EXCEPTIONS 2
-#define INNERCLASSES 3
-#define OTHER 4
+#define CLASS           7
+#define FIELDREF        9
+#define METHOD          10
+#define INTERFACE       11
+#define NAMEANDTYPE     12
+#define UTF8            1
+#define STRING          8
+#define INTEGER         3
+#define FLOAT           4
+#define LONG            5
+#define DOUBLE          6
+#define CONSTANTVALUE   0
+#define CODE            1
+#define EXCEPTIONS      2
+#define INNERCLASSES    3
+#define OTHER           4
 
 //Defines para o campo access_flags de field_info
 #define FIELD_ACC_PUBLIC      0x0001
@@ -248,7 +248,8 @@ typedef struct {
     attribute_info* attributes;
 }   ClassFile;
 
-FILE* open_file(char *nomearquivo);
+void free_clFile(ClassFile *cf);
+//FILE* open_file(char *nomearquivo);
 void load_magic(ClassFile* cf,FILE* fd);
 void load_versions(ClassFile* cf,FILE* fd);
 void load_constantpool(ClassFile* cf,FILE* fd);
