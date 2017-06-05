@@ -224,36 +224,19 @@ typedef struct {
     attribute_info* attributes;
 }   ClassFile;
 
-u1 u1Read(FILE* fd);
-u2 u2Read(FILE* fd);
-u4 u4Read(FILE* fd);
-FILE* open_file(char *nomearquivo);
 void load_magic(ClassFile* cf,FILE* fd);
 void load_versions(ClassFile* cf,FILE* fd);
 void load_constantpool(ClassFile* cf,FILE* fd);
 void load_classdata(ClassFile* cf,FILE* fd);
 void load_interfaces(ClassFile* cf,FILE* fd);
-int findtype(char* type);
 void load_constantvalue_attr(attribute_info* att, FILE* fd);
 void load_code_attr(attribute_info* att, ClassFile* cf,FILE* fd);
 void load_exceptions_attr(attribute_info* att,FILE* fd);
 void load_innerclasses_attr(attribute_info* att,FILE* fd);
 void load_other_attr(attribute_info* att, FILE* fd);
 void load_fields(ClassFile* cf,FILE* fd);
-ClassFile* readClass(FILE* fd);
-void load_attribute(attribute_info* att,ClassFile* cf,FILE* fd);
 void load_attributes(ClassFile* cf, FILE* fd);
 void load_methods(ClassFile* cf,FILE* fd);
-int is_true(int code, int id);
-void print_permissions(int code,FILE* fout);
-void print_magic(ClassFile* cf,FILE* fout);
-void print_versions(ClassFile* cf,FILE* fout);
-void print_constantpool(ClassFile* cf,FILE* fout);
-void print_classdata(ClassFile* cf,FILE* fout);
-void print_interfaces(ClassFile* cf,FILE* fout);
-void print_attribute(ClassFile* cf, attribute_info* att,FILE* fout);
-void print_fields(ClassFile* cf,FILE* fout);
-void print_methods(ClassFile* cf,FILE* fout);
-void print_attributes(ClassFile* cf,FILE* fout);
-void print_class(ClassFile* cf,char* nomearquivo,FILE* fout);
+void load_attribute(attribute_info* att,ClassFile* cf,FILE* fd);
+ClassFile* readClass(FILE* fd);
 #endif
