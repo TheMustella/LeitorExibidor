@@ -1,4 +1,5 @@
-prog:
-	@gcc -Wall -std=c99 experiencias.c -o exe
+make:
+	gcc -Wall -std=c99 leitor_exibidor.c -o leitor_executavel
 
-	@rm -f exe
+clean:
+	rm leitor_executavel
