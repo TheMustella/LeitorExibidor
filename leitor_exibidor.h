@@ -6,7 +6,8 @@
 
 #ifndef LEITOR_EXIBIDOR_H
 #define LEITOR_EXIBIDOR_H
-    
+
+#define CONTINUED 0
 #define CLASS 7
 #define FIELDREF 9
 #define METHOD 10
@@ -18,7 +19,7 @@
 #define FLOAT 4
 #define LONG 5
 #define DOUBLE 6
-#define CONSTANTVALUE 0
+#define CONSTANTVALUE 5
 #define CODE 1
 #define EXCEPTIONS 2
 #define INNERCLASSES 3

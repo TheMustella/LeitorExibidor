@@ -102,6 +102,10 @@ void load_constantpool(ClassFile* cf,FILE* fd) {
                 cp->info.Double_info.low_bytes = u4Read(fd);
             break;
         }
+        if(cp->tag==LONG || cp->tag==DOUBLE) {
+            ++cp;
+            cp->tag = -1;
+        }
     }
 }
 
