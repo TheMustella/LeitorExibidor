@@ -564,7 +564,7 @@ void print_fields(ClassFile* cf, FILE* fout) {
         fprintf(fout, "\n");
         fprintf(fout, "\tATTRIBUTE_COUNT: %d\n\n", field_aux->attributes_count);
         attribute_info* att_aux;
-        for (att_aux = field_aux->attributes; att_aux = field_aux->attributes + field_aux->attributes_count; ++att_aux) {
+        for (att_aux = field_aux->attributes; att_aux < field_aux->attributes + field_aux->attributes_count; ++att_aux) {
             fprintf(fout, "[%d] FIELD_ATTRIBUTE:\n", i2++);
             print_attribute(cf, att_aux, fout);
         }
