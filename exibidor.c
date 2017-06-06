@@ -28,7 +28,10 @@ void print_magic(ClassFile* cf, FILE* fout) {
 
 void print_versions(ClassFile* cf, FILE* fout) {
     fprintf(fout, "MINOR VERSION: %d\n", cf->minor_version);
-    fprintf(fout, "MAJOR VERSION: %d - %s\n", cf->major_version, show_version(cf->major_version));
+    char *nome_versao = NULL;
+    nome_versao = show_version(cf->major_version);
+    fprintf(fout, "MAJOR VERSION: %d - %s\n", cf->major_version, nome_versao);
+    free(nome_versao);
 
     fprintf(fout, "CONSTANT POOL COUNT: %d\n", cf->constant_pool_count);
 
@@ -197,7 +200,7 @@ enum instrucoes_code { //10 instrucoes por linha
 
     long long Long;
     char* type;
-    type = (char*)malloc(sizeof(char) * cf->constant_pool[att->attribute_name_index - 1].info.Utf8_info.length);
+    type = (char*)malloc(sizeof(char) * cf->constant_pool[att->attribute_name_index - 1].info.Utf8_info.length+1);
     strcpy(type, (char*)cf->constant_pool[att->attribute_name_index - 1].info.Utf8_info.bytes);
     int i = findtype(type);
     fprintf(fout, "\tATTRIBUTE_NAME_INDEX: %d : %s\n", att->attribute_name_index, (char*)cf->constant_pool[att->attribute_name_index - 1].info.Utf8_info.bytes);
@@ -516,6 +519,7 @@ enum instrucoes_code { //10 instrucoes por linha
     case OTHER:
         break;
     }
+    free(type);
 }
 
 void print_fields(ClassFile* cf, FILE* fout) {

@@ -5,14 +5,13 @@
 
 int main(int argc, char* argv[]) {
     char nomearquivo[1024];
-    char saidaarquivo[1024] = "output_class.txt";
     FILE* fd = NULL;
-    fd = io_handler(argc, argv, nomearquivo, saidaarquivo);
+    FILE* fout = NULL;// = fopen(saidaarquivo, "w");
+
+
+    fd = io_handler(argc, argv, nomearquivo, &fout);
     ClassFile* cf = readClass(fd);
-    FILE* fout = fopen(saidaarquivo, "w");
     print_class(cf, nomearquivo, fout);
-    fclose(fout);
-    fclose(fd);
-    printf("Finalizado!\n");
+    shutdown(fd, fout, cf);
     return 0;
 }
