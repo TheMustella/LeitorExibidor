@@ -246,7 +246,7 @@ enum instrucoes_code { //10 instrucoes por linha
         cp_info* cp;
         for (code = att->type.Code.code; code < att->type.Code.code + att->type.Code.code_length; ++code) {
             //fprintf(fout, "\t\t%d | %02x | ", (int) (code - (att->type.Code.code)), *code); //printa o codigo em hexa da instrucao e a instrucao em questao
-            fprintf(fout, "\t\t%ld | ", (code - (att->type.Code.code))); //printa a instrucao sem o codigo em hexa
+            fprintf(fout, "\t\t%d | ", (int) (code - (att->type.Code.code))); //printa a instrucao sem o codigo em hexa
 
             fprintf(fout, "%s ", instrucoes_nomes[*code]); //printa a instrucao
             int8_t byte_aux;
@@ -291,7 +291,10 @@ enum instrucoes_code { //10 instrucoes por linha
                     half_aux = *(++code); //byte1 de index
                     half_aux = half_aux << 8; //shift de index
                     half_aux += *(++code); //byte2 de index
-                    fprintf(fout, "#%d", half_aux); //print indexbyte
+                    cp = cf->constant_pool +  half_aux - 1;
+                    fprintf(fout, "#%d <%s.%s>", half_aux, 
+                        (char*)cf->constant_pool[cf->constant_pool[cp->info.Fieldref_info.class_index - 1].info.Class_info.name_index - 1].info.Utf8_info.bytes, 
+                        (char*)cf->constant_pool[cf->constant_pool[cp->info.Fieldref_info.name_and_type_index - 1].info.NameAndType_info.name_index - 1].info.Utf8_info.bytes);
                     break;
                 case getstatic:
                     half_aux = *(++code); //byte1 de index
@@ -414,7 +417,7 @@ enum instrucoes_code { //10 instrucoes por linha
                     break;
                 case iinc:
                     byte_aux = *(++code); //byte de index
-                    fprintf(fout, "%ld by %d", byte_aux, *(++code)); //print branchbyte
+                    fprintf(fout, "%d by %d", byte_aux, *(++code)); //print branchbyte
                     break;
                 case iload:
                     fprintf(fout, "#%d", *(++code)); //index
@@ -448,7 +451,7 @@ enum instrucoes_code { //10 instrucoes por linha
                     cp = cf->constant_pool + half_aux - 1;
                     fprintf(fout, "#%d <%s.%s>", half_aux, 
                         (char*)cf->constant_pool[cf->constant_pool[cp->info.Method_info.class_index - 1].info.Class_info.name_index - 1].info.Utf8_info.bytes, 
-						(char*)cf->constant_pool[cf->constant_pool[cp->info.Method_info.name_and_type_index - 1].info.NameAndType_info.name_index - 1].info.Utf8_info.bytes); //print indexbyte
+						(char*)cf->constant_pool[cf->constant_pool[cp->info.Method_info.name_and_type_index - 1].info.NameAndType_info.name_index - 1].info.Utf8_info.bytes);
                     break;
                 case invokestatic:
                     half_aux = *(++code); //byte1 de index
@@ -460,7 +463,10 @@ enum instrucoes_code { //10 instrucoes por linha
                     half_aux = *(++code); //byte1 de index
                     half_aux = half_aux << 8; //shift de index
                     half_aux += *(++code); //byte2 de index
-                    fprintf(fout, "#%d", half_aux); //print indexbyte
+                    cp = cf->constant_pool + half_aux - 1;
+                    fprintf(fout, "#%d <%s.%s>", half_aux, 
+                        (char*)cf->constant_pool[cf->constant_pool[cp->info.Method_info.class_index - 1].info.Class_info.name_index - 1].info.Utf8_info.bytes, 
+                        (char*)cf->constant_pool[cf->constant_pool[cp->info.Method_info.name_and_type_index - 1].info.NameAndType_info.name_index - 1].info.Utf8_info.bytes);
                     break;
                 case istore:
                     fprintf(fout, "#%d", *(++code)); //index
@@ -482,7 +488,9 @@ enum instrucoes_code { //10 instrucoes por linha
                     fprintf(fout, "%d", word_aux); //print branchbyte
                     break;
                 case ldc:
-                    fprintf(fout, "#%d", *(++code)); //index
+                    byte_aux = *(++code); //index
+                    cp = cf->constant_pool + half_aux - 1;
+                    fprintf(fout, "#%d", half_aux); //CONTEUDO PODE SER STRING, FLOAT...
                     break;
                 case ldc_w:
                     half_aux = *(++code); //byte1 de index
@@ -523,7 +531,11 @@ enum instrucoes_code { //10 instrucoes por linha
                     half_aux = *(++code); //byte1 de index
                     half_aux = half_aux << 8; //shift de index
                     half_aux += *(++code); //byte2 de index
-                    fprintf(fout, "#%d", half_aux); //print indexbyte
+
+                    cp = cf->constant_pool +  half_aux - 1;
+                    fprintf(fout, "#%d <%s.%s>", half_aux, 
+                        (char*)cf->constant_pool[cf->constant_pool[cp->info.Fieldref_info.class_index - 1].info.Class_info.name_index - 1].info.Utf8_info.bytes, 
+                        (char*)cf->constant_pool[cf->constant_pool[cp->info.Fieldref_info.name_and_type_index - 1].info.NameAndType_info.name_index - 1].info.Utf8_info.bytes);
                     break;
                 case putstatic:
                     half_aux = *(++code); //byte1 de index
@@ -550,7 +562,7 @@ enum instrucoes_code { //10 instrucoes por linha
                         half_aux = *(++code); //byte1 de constante
                         half_aux = half_aux << 8; //shift de constante
                         half_aux += *(++code); //byte2 de constante
-                        fprintf(fout, " const %ld", half_aux); //print constante
+                        fprintf(fout, " const %d", half_aux); //print constante
                     }
                     else {
                         half_aux = *(++code); //byte1 de index
