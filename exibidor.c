@@ -140,6 +140,8 @@ void print_interfaces(ClassFile* cf, FILE* fout) {
 
 void print_attribute(ClassFile* cf, attribute_info* att, FILE* fout) {
 
+char* tiponewarray_conteudo[] = {NULL, NULL, NULL, NULL, "T_BOOLEAN", "T_CHAR", "T_FLOAT", "T_DOUBLE", "T_BYTE", "T_SHORT","T_INT", "T_LONG"};
+
 char* instrucoes_nomes[] = { //10 instrucoes por linha
     "nop", "aconst_null", "iconst_m1", "iconst_0", "iconst_1", "iconst_2", "iconst_3", "iconst_4", "iconst_5", "lconst_0", //0 ao 9
     "lconst_1", "fconst_0", "fconst_1", "fconst_2", "dconst_0", "dconst_1", "bipush", "sipush", "ldc", "ldc_w",
@@ -240,19 +242,233 @@ enum instrucoes_code { //10 instrucoes por linha
         fprintf(fout, "\tCODE:\n");
         u1* code;
         for (code = att->type.Code.code; code < att->type.Code.code + att->type.Code.code_length; ++code) {
-            fprintf(fout, "\t\t%02x | ", *code); //printa o codigo em hexa da instrucao
-            
+            //fprintf(fout, "\t\t%d | %02x | ", (int) (code - (att->type.Code.code)), *code); //printa o codigo em hexa da instrucao e a instrucao em questao
+            fprintf(fout, "\t\t%d | ", (int) (code - (att->type.Code.code))); //printa a instrucao sem o codigo em hexa
+
             fprintf(fout, "%s ", instrucoes_nomes[*code]); //printa a instrucao
             
-            switch (*code) { //TRATAR INSTRUCOES QUE ARMAZENAM PARAMETROS NA PILHA: new, invokespecial, invokevirtual, ldc2_w, multianewarray, putfield, getfield...
+            switch (*code) { //TRATAR INSTRUCOES QUE ARMAZENAM OPERANDOS NA PILHA
+                case aload:
+                    fprintf(fout, "%d", *(++code));
+                    break;
+                case anewarray:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case astore:
+                    fprintf(fout, "%d", *(++code));
+                    break;
                 case bipush:
                     fprintf(fout, "%d", *(++code)); //leitura do byte com parametro para bipush -- Testado e funcionando
                     break;
-                case ret:
-                    fprintf(fout, "%d", *(++code)); //leitura do byte com parametro para ret -- ainda não testado
+                case checkcast:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
                     break;
-                
-                break;
+                case dload:
+                    fprintf(fout, "%d", *(++code)); //index
+                    break;
+                case dstore:
+                    fprintf(fout, "%d", *(++code)); //index
+                    break;
+                case fload:
+                    fprintf(fout, "%d", *(++code)); //index
+                    break;
+                case fstore:
+                    fprintf(fout, "%d", *(++code)); //index
+                    break;
+                case getfield:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case getstatic:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case goto2:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case goto_w:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    fprintf(fout, "%d", *(++code)); //branchbyte3
+                    fprintf(fout, "%d", *(++code)); //branchbyte4
+                    break;
+                case if_acmpeq:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case if_acmpne:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case if_icmple:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case if_icmpgt:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case if_icmpge:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case if_icmplt:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case if_icmpne:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case if_icmpeq:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case ifeq:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case ifne:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case ifgt:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case iflt:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case ifle:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case ifge:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case ifnonnull:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case ifnull:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case iinc:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case iload:
+                    fprintf(fout, "%d", *(++code)); //index
+                    break;
+                case instanceof:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case invokedynamic:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    ++code; //leitura de 0 - caracteristica do invokedynamic
+                    ++code; //leitura de 0 - caracteristica do invokedynamic
+                    break;
+                case invokeinterface:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    fprintf(fout, "%d", *(++code)); //count
+                    ++code; //leitura de 0 - caracteristica do invokedynamic
+                    break;
+                case invokespecial:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case invokestatic:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case invokevirtual:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case istore:
+                    fprintf(fout, "%d", *(++code)); //index
+                    break;
+                case jsr:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    break;
+                case jsr_w:
+                    fprintf(fout, "%d", *(++code)); //branchbyte1
+                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    fprintf(fout, "%d", *(++code)); //branchbyte3
+                    fprintf(fout, "%d", *(++code)); //branchbyte4
+                    break;
+                case ldc:
+                    fprintf(fout, "%d", *(++code)); //index
+                    break;
+                case ldc_w:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case ldc2_w:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case lload:
+                    fprintf(fout, "%d", *(++code)); //index
+                    break;
+                case lstore:
+                    fprintf(fout, "%d", *(++code)); //index
+                    break;
+                case multianewarray:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    fprintf(fout, " dim %d", *(++code)); //dimensions
+                    break;
+                case new:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case newarray:
+                    fprintf(fout, "%s", tiponewarray_conteudo[*(++code)]); //string referente a codificacao do tipo em questao
+                    break;
+                case putfield:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case putstatic:
+                    fprintf(fout, "#%d", *(++code)); //indexbyte1
+                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    break;
+                case ret:
+                    fprintf(fout, "%d", *(++code)); //index
+                    break;
+                case sipush:
+                    fprintf(fout, "%d", *(++code)); //byte1
+                    fprintf(fout, "%d", *(++code)); //byte2
+                    break;
+                case wide:
+                    if ((*(++code)) == iinc) { //caso o proximo byte seja iinc
+                        fprintf(fout, "#%d", *(++code)); //indexbyte1
+                        fprintf(fout, "%d", *(++code)); //indexbyte2
+                        fprintf(fout, "%d", *(++code)); //constbyte1
+                        fprintf(fout, "%d", *(++code)); //constbyte2
+                        //REVER - CONCATENAR BYTES DA CONSTANTE ANTES DE PRINTAR
+                    }
+                    else {
+                        fprintf(fout, "#%d", *(++code)); //indexbyte1
+                        fprintf(fout, "%d", *(++code)); //indexbyte2
+                    }
+                    break;
+
+                case lookupswitch: //REVER - ESTUDAR SOBRE
+                    break;
+                case tableswitch: //REVER - ESTUDAR SOBRE
+                    break;
             }
 
 
