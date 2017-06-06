@@ -28,7 +28,9 @@ void print_magic(ClassFile* cf, FILE* fout) {
 
 void print_versions(ClassFile* cf, FILE* fout) {
     fprintf(fout, "MINOR VERSION: %d\n", cf->minor_version);
-    fprintf(fout, "MAJOR VERSION: %d - %s\n", cf->major_version, show_version(cf->major_version));
+    char *nome_versao =  show_version(cf->major_version);
+    fprintf(fout, "MAJOR VERSION: %d - %s\n", cf->major_version, nome_versao);
+    free(nome_versao);
 
     fprintf(fout, "CONSTANT POOL COUNT: %d\n", cf->constant_pool_count);
 
@@ -90,7 +92,7 @@ void print_constantpool(ClassFile* cf, FILE* fout) {
         case INTEGER:
             fprintf(fout, "\tCP_INFO: INTEGER\n");
             fprintf(fout, "\tBYTES: %x\n", cp->info.Integer_info.bytes);
-            fprintf(fout, "\tVALUE: %d\n\n", cp->info.Integer_info.bytes);
+            fprintf(fout, "\tVALUE: %u\n\n", cp->info.Integer_info.bytes);
             break;
         case FLOAT:
             fprintf(fout, "\tCP_INFO: FLOAT\n");
@@ -127,7 +129,7 @@ void print_classdata(ClassFile* cf, FILE* fout) {
 
 void print_interfaces(ClassFile* cf, FILE* fout) {
     fprintf(fout, "INTERFACES_COUNT: %d\n", cf->interfaces_count);
-    if (cf->interfaces_count <= 0) {
+    if (cf->interfaces_count == 0) {
         fprintf(fout, "\n");
         return;
     }
@@ -197,11 +199,11 @@ enum instrucoes_code { //10 instrucoes por linha
 
     long long Long;
     char* type;
-    type = (char*)malloc(sizeof(char) * cf->constant_pool[att->attribute_name_index - 1].info.Utf8_info.length);
+    type = (char*)malloc(sizeof(char) * cf->constant_pool[att->attribute_name_index - 1].info.Utf8_info.length+1);
     strcpy(type, (char*)cf->constant_pool[att->attribute_name_index - 1].info.Utf8_info.bytes);
     int i = findtype(type);
     fprintf(fout, "\tATTRIBUTE_NAME_INDEX: %d : %s\n", att->attribute_name_index, (char*)cf->constant_pool[att->attribute_name_index - 1].info.Utf8_info.bytes);
-    fprintf(fout, "\tATTRIBUTE_LENGTH: %d\n\n", att->attribute_length);
+    fprintf(fout, "\tATTRIBUTE_LENGTH: %u\n\n", att->attribute_length);
     switch (i) {
     case CONSTANTVALUE:
         fprintf(fout, "\tTYPE: CONSTANT_VALUE\n");
@@ -210,7 +212,7 @@ enum instrucoes_code { //10 instrucoes por linha
         case INTEGER:
             fprintf(fout, "\tCP_INFO: INTEGER\n");
             fprintf(fout, "\tBYTES: %x\n", cf->constant_pool[att->type.ConstantValue.constantvalue_index - 1].info.Integer_info.bytes);
-            fprintf(fout, "\tVALUE: %d\n\n", cf->constant_pool[att->type.ConstantValue.constantvalue_index - 1].info.Integer_info.bytes);
+            fprintf(fout, "\tVALUE: %u\n\n", cf->constant_pool[att->type.ConstantValue.constantvalue_index - 1].info.Integer_info.bytes);
             break;
         case FLOAT:
             fprintf(fout, "\tCP_INFO: FLOAT\n");
@@ -238,7 +240,7 @@ enum instrucoes_code { //10 instrucoes por linha
         fprintf(fout, "\tTYPE: CODE\n");
         fprintf(fout, "\tMAX_STACK: %d\n", att->type.Code.max_stack);
         fprintf(fout, "\tMAX_LOCALS: %d\n", att->type.Code.max_locals);
-        fprintf(fout, "\tCODE_LENGTH: %d\n", att->type.Code.code_length);
+        fprintf(fout, "\tCODE_LENGTH: %u\n", att->type.Code.code_length);
         fprintf(fout, "\tCODE:\n");
         u1* code;
         for (code = att->type.Code.code; code < att->type.Code.code + att->type.Code.code_length; ++code) {
@@ -602,12 +604,13 @@ enum instrucoes_code { //10 instrucoes por linha
     case OTHER:
         break;
     }
+    free(type);
 }
 
 void print_fields(ClassFile* cf, FILE* fout) {
     int i1 = 0, i2 = 0;
     fprintf(fout, "FIELDS_COUNT: %d\n", cf->fields_count);
-    if (cf->fields_count <= 0) {
+    if (cf->fields_count == 0) {
         fprintf(fout, "\n");
         return;
     }
@@ -632,7 +635,7 @@ void print_fields(ClassFile* cf, FILE* fout) {
 void print_methods(ClassFile* cf, FILE* fout) {
     int i1 = 0, i2 = 0;
     fprintf(fout, "METHODS_COUNT: %d\n", cf->method_count);
-    if (cf->method_count <= 0) {
+    if (cf->method_count == 0) {
         fprintf(fout, "\n");
         return;
     }
@@ -657,7 +660,7 @@ void print_methods(ClassFile* cf, FILE* fout) {
 void print_attributes(ClassFile* cf, FILE* fout) {
     int i = 0;
     fprintf(fout, "ATTRIBUTES_COUNT: %d\n", cf->attributes_count);
-    if (cf->attributes_count <= 0) {
+    if (cf->attributes_count == 0) {
         fprintf(fout, "\n");
         return;
     }
