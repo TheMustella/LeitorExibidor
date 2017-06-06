@@ -17,3 +17,4 @@ void print_fields(ClassFile* cf,FILE* fout);
 void print_methods(ClassFile* cf,FILE* fout);
 void print_attributes(ClassFile* cf,FILE* fout);
 void print_class(ClassFile* cf,char* nomearquivo,FILE* fout);
+char* show_version(int code);

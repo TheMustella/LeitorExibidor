@@ -6,6 +6,7 @@ int is_true(int code, int id) {
 }
 
 void print_permissions(int code, FILE* fout) {
+    fprintf(fout, "[");
     if (is_true(code, 0)) fprintf(fout, "public ");
     else if (is_true(code, 1)) fprintf(fout, "private ");
     else if (is_true(code, 2)) fprintf(fout, "protected ");
@@ -18,6 +19,7 @@ void print_permissions(int code, FILE* fout) {
     if (is_true(code, 8)) fprintf(fout, "native ");
     if (is_true(code, 9)) fprintf(fout, "interface ");
     if (is_true(code, 10)) fprintf(fout, "abstract ");
+    fprintf(fout, "]");
 }
 
 void print_magic(ClassFile* cf, FILE* fout) {
@@ -26,7 +28,7 @@ void print_magic(ClassFile* cf, FILE* fout) {
 
 void print_versions(ClassFile* cf, FILE* fout) {
     fprintf(fout, "MINOR VERSION: %d\n", cf->minor_version);
-    fprintf(fout, "MAJOR VERSION: %d\n", cf->major_version);
+    fprintf(fout, "MAJOR VERSION: %d - %s\n", cf->major_version, show_version(cf->major_version));
 
     fprintf(fout, "CONSTANT POOL COUNT: %d\n", cf->constant_pool_count);
 
@@ -137,6 +139,60 @@ void print_interfaces(ClassFile* cf, FILE* fout) {
 }
 
 void print_attribute(ClassFile* cf, attribute_info* att, FILE* fout) {
+
+char* instrucoes_nomes[] = { //10 instrucoes por linha
+    "nop", "aconst_null", "iconst_m1", "iconst_0", "iconst_1", "iconst_2", "iconst_3", "iconst_4", "iconst_5", "lconst_0", //0 ao 9
+    "lconst_1", "fconst_0", "fconst_1", "fconst_2", "dconst_0", "dconst_1", "bipush", "sipush", "ldc", "ldc_w",
+    "ldc2_w", "iload", "lload", "fload","dload", "aload", "iload_0", "iload_1", "iload_2", "iload_3",
+    "lload_0", "lload_1", "lload_2", "lload_3", "fload_0", "fload_1", "fload_2", "fload_3", "dload_0", "dload_1",
+    "dload_2", "dload_3", "aload_0", "aload_1", "aload_2", "aload_3", "iaload", "laload", "faload", "daload",
+    "aaload", "baload", "caload", "saload", "istore", "lstore", "fstore", "dstore", "astore", "istore_0",
+    "istore_1", "istore_2", "istore_3", "lstore_0", "lstore_1", "lstore_2", "lstore_3", "fstore_0", "fstore_1", "fstore_2",
+    "fstore_3", "dstore_0", "dstore_1", "dstore_2", "dstore_3", "astore_0", "astore_1", "astore_2", "astore_3", "iastore",
+    "lastore", "fastore", "dastore", "aastore", "bastore", "castore", "sastore", "pop", "pop2", "dup",
+    "dup_x1", "dup_x2", "dup2", "dup2_x1", "dup2_x2", "swap", "iadd", "ladd", "fadd", "dadd",
+    "isub", "lsub", "fsub", "dsub", "imul", "lmul", "fmul", "dmul", "idiv", "ldiv", //100 ao 109
+    "fdiv", "ddiv", "irem", "lrem", "frem", "drem", "ineg", "lneg", "fneg", "dneg",
+    "ishl", "lshl", "ishr", "lshr", "iushr", "lushr", "iand", "land", "ior", "lor",
+    "ixor", "lxor", "iinc", "i2l", "i2f", "i2d", "l2i", "l2f", "l2d", "f2i",
+    "f2l", "f2d", "d2i", "d2l", "d2f", "i2b", "i2c", "i2s", "lcmp", "fcmpl",
+    "fcmpg", "dcmpl", "dcmpg", "ifeq", "ifne", "iflt", "ifge","ifgt", "ifle", "if_icmpeq", //150 ao 159
+    "if_icmpne", "if_icmplt", "if_icmpge", "if_icmpgt", "if_icmple", "if_acmpeq", "if_acmpne", "goto", "jsr", "ret",
+    "tableswitch", "lookupswitch", "ireturn", "lreturn", "freturn", "dreturn", "areturn", "return", "getstatic", "putstatic",
+    "getfield", "putfield", "invokevirtual", "invokespecial", "invokestatic", "invokeinterface", "invokedynamic", "new", "newarray", "anewarray",
+    "arraylength", "athrow", "checkcast", "instanceof", "monitorenter", "monitorexit", "wide", "multianewarray", "ifnull", "ifnonnull",
+    "goto_w", "jsr_w", "breakpoint", NULL, NULL, NULL, NULL, NULL, NULL, NULL, //200 ao 209
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, "impdep1", "impdep2" //250 ao 255
+};
+
+enum instrucoes_code { //10 instrucoes por linha
+    nop, aconst_null, iconst_m1, iconst_0, iconst_1, iconst_2, iconst_3, iconst_4, iconst_5, lconst_0, //0 ao 9
+    lconst_1, fconst_0, fconst_1, fconst_2, dconst_0, dconst_1, bipush, sipush, ldc, ldc_w,
+    ldc2_w, iload, lload, fload,dload, aload, iload_0, iload_1, iload_2, iload_3,
+    lload_0, lload_1, lload_2, lload_3, fload_0, fload_1, fload_2, fload_3, dload_0, dload_1,
+    dload_2, dload_3, aload_0, aload_1, aload_2, aload_3, iaload, laload, faload, daload,
+    aaload, baload, caload, saload, istore, lstore, fstore, dstore, astore, istore_0,
+    istore_1, istore_2, istore_3, lstore_0, lstore_1, lstore_2, lstore_3, fstore_0, fstore_1, fstore_2,
+    fstore_3, dstore_0, dstore_1, dstore_2, dstore_3, astore_0, astore_1, astore_2, astore_3, iastore,
+    lastore, fastore, dastore, aastore, bastore, castore, sastore, pop, pop2, dup,
+    dup_x1, dup_x2, dup2, dup2_x1, dup2_x2, swap, iadd, ladd, fadd, dadd,
+    isub, lsub, fsub, dsub, imul, lmul, fmul, dmul, idiv, ldiv, //100 ao 109
+    fdiv, ddiv, irem, lrem, frem, drem, ineg, lneg, fneg, dneg,
+    ishl, lshl, ishr, lshr, iushr, lushr, iand, land, ior, lor,
+    ixor, lxor, iinc, i2l, i2f, i2d, l2i, l2f, l2d, f2i,
+    f2l, f2d, d2i, d2l, d2f, i2b, i2c, i2s, lcmp, fcmpl,
+    fcmpg, dcmpl, dcmpg, ifeq, ifne, iflt, ifge,ifgt, ifle, if_icmpeq, //150 ao 159
+    if_icmpne, if_icmplt, if_icmpge, if_icmpgt, if_icmple, if_acmpeq, if_acmpne, goto2, jsr, ret,
+    tableswitch, lookupswitch, ireturn, lreturn, freturn, dreturn, areturn, return2, getstatic, putstatic,
+    getfield, putfield, invokevirtual, invokespecial, invokestatic, invokeinterface, invokedynamic, new, newarray, anewarray,
+    arraylength, athrow, checkcast, instanceof, monitorenter, monitorexit, wide, multianewarray, ifnull, ifnonnull,
+    goto_w, jsr_w, breakpoint, impdep1 = 254, impdep2 = 255 //250 ao 255
+};
+
     long long Long;
     char* type;
     type = (char*)malloc(sizeof(char) * cf->constant_pool[att->attribute_name_index - 1].info.Utf8_info.length);
@@ -184,7 +240,23 @@ void print_attribute(ClassFile* cf, attribute_info* att, FILE* fout) {
         fprintf(fout, "\tCODE:\n");
         u1* code;
         for (code = att->type.Code.code; code < att->type.Code.code + att->type.Code.code_length; ++code) {
-            fprintf(fout, "\t\t%x\n", *code);
+            fprintf(fout, "\t\t%02x | ", *code); //printa o codigo em hexa da instrucao
+            
+            fprintf(fout, "%s ", instrucoes_nomes[*code]); //printa a instrucao
+            
+            switch (*code) { //TRATAR INSTRUCOES QUE ARMAZENAM PARAMETROS NA PILHA: new, invokespecial, invokevirtual, ldc2_w, multianewarray, putfield, getfield...
+                case bipush:
+                    fprintf(fout, "%d", *(++code)); //leitura do byte com parametro para bipush -- Testado e funcionando
+                    break;
+                case ret:
+                    fprintf(fout, "%d", *(++code)); //leitura do byte com parametro para ret -- ainda não testado
+                    break;
+                
+                break;
+            }
+
+
+            fprintf(fout, "\n");
         }
         fprintf(fout, "\tEXCEPTION_TABLE_LENGTH: %d\n", att->type.Code.exception_table_length);
         exception_table_info* exp_aux;
@@ -314,4 +386,53 @@ void print_class(ClassFile* cf, char* nomearquivo, FILE* fout) {
     fprintf(fout, "----------------------------------------------\n\n");
     print_attributes(cf, fout);
     fprintf(fout, "----------------------------------------------\n\n");
+}
+
+char* show_version(int code) {
+//Minor Version funciona como subversão
+    
+    char* nome_versao;
+    switch (code) {
+        case 45:
+            nome_versao = (char*) malloc(sizeof(char) * 8);
+            strcpy(nome_versao, "JDK 1.1");
+            break;
+        case 46:
+            nome_versao = (char*) malloc(sizeof(char) * 8);
+            strcpy(nome_versao, "JDK 1.2");
+            break;
+        case 47:
+            nome_versao = (char*) malloc(sizeof(char) * 8);
+            strcpy(nome_versao, "JDK 1.3");
+            break;
+        case 48:
+            nome_versao = (char*) malloc(sizeof(char) * 8);
+            strcpy(nome_versao, "JDK 1.4");
+            break;
+        case 49:
+            nome_versao = (char*) malloc(sizeof(char) * 12);
+            strcpy(nome_versao, "Java SE 5.0");
+            break;
+        case 50:
+            nome_versao = (char*) malloc(sizeof(char) * 12);
+            strcpy(nome_versao, "Java SE 6.0");
+            break;
+        case 51:
+            nome_versao = (char*) malloc(sizeof(char) * 10);
+            strcpy(nome_versao, "Java SE 7");
+            break;
+        case 52:
+            nome_versao = (char*) malloc(sizeof(char) * 10);
+            strcpy(nome_versao, "Java SE 8");
+            break;
+        case 53:
+            nome_versao = (char*) malloc(sizeof(char) * 10);
+            strcpy(nome_versao, "Java SE 9");
+            break;
+        default:
+            nome_versao = (char*) malloc(sizeof(char) * 21);
+            strcpy(nome_versao, "Java nao reconhecido");
+            break;
+    }
+    return nome_versao;
 }
