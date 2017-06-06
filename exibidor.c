@@ -243,225 +243,311 @@ enum instrucoes_code { //10 instrucoes por linha
         u1* code;
         for (code = att->type.Code.code; code < att->type.Code.code + att->type.Code.code_length; ++code) {
             //fprintf(fout, "\t\t%d | %02x | ", (int) (code - (att->type.Code.code)), *code); //printa o codigo em hexa da instrucao e a instrucao em questao
-            fprintf(fout, "\t\t%d | ", (int) (code - (att->type.Code.code))); //printa a instrucao sem o codigo em hexa
+            fprintf(fout, "\t\t%ld | ", (code - (att->type.Code.code))); //printa a instrucao sem o codigo em hexa
 
             fprintf(fout, "%s ", instrucoes_nomes[*code]); //printa a instrucao
+            long byte_aux;
             
             switch (*code) { //TRATAR INSTRUCOES QUE ARMAZENAM OPERANDOS NA PILHA
                 case aload:
-                    fprintf(fout, "%d", *(++code));
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case anewarray:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case astore:
-                    fprintf(fout, "%d", *(++code));
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case bipush:
-                    fprintf(fout, "%d", *(++code)); //leitura do byte com parametro para bipush -- Testado e funcionando
+                    fprintf(fout, "%d", *(++code)); //byte
                     break;
                 case checkcast:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case dload:
-                    fprintf(fout, "%d", *(++code)); //index
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case dstore:
-                    fprintf(fout, "%d", *(++code)); //index
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case fload:
-                    fprintf(fout, "%d", *(++code)); //index
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case fstore:
-                    fprintf(fout, "%d", *(++code)); //index
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case getfield:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case getstatic:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
-                case goto2:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                case goto2: //REVER - MOSTRANDO VALOR INESPERADO
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case goto_w:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
-                    fprintf(fout, "%d", *(++code)); //branchbyte3
-                    fprintf(fout, "%d", *(++code)); //branchbyte4
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte3 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte4 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
+
                     break;
                 case if_acmpeq:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case if_acmpne:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case if_icmple:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case if_icmpgt:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case if_icmpge:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case if_icmplt:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case if_icmpne:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case if_icmpeq:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case ifeq:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case ifne:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case ifgt:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case iflt:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case ifle:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case ifge:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case ifnonnull:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case ifnull:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case iinc:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte de index
+                    fprintf(fout, "%ld by %d", byte_aux, *(++code)); //print branchbyte
                     break;
                 case iload:
-                    fprintf(fout, "%d", *(++code)); //index
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case instanceof:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case invokedynamic:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     ++code; //leitura de 0 - caracteristica do invokedynamic
                     ++code; //leitura de 0 - caracteristica do invokedynamic
                     break;
                 case invokeinterface:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
-                    fprintf(fout, "%d", *(++code)); //count
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
+                    fprintf(fout, " count %d", *(++code)); //count
                     ++code; //leitura de 0 - caracteristica do invokedynamic
                     break;
                 case invokespecial:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case invokestatic:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case invokevirtual:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case istore:
-                    fprintf(fout, "%d", *(++code)); //index
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case jsr:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case jsr_w:
-                    fprintf(fout, "%d", *(++code)); //branchbyte1
-                    fprintf(fout, "%d", *(++code)); //branchbyte2
-                    fprintf(fout, "%d", *(++code)); //branchbyte3
-                    fprintf(fout, "%d", *(++code)); //branchbyte4
+                    byte_aux = *(++code); //byte1 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte2 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte3 de branch
+                    byte_aux = byte_aux << 8; //shift de branch
+                    byte_aux += *(++code); //byte4 de branch
+                    fprintf(fout, "%ld", byte_aux); //print branchbyte
                     break;
                 case ldc:
-                    fprintf(fout, "%d", *(++code)); //index
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case ldc_w:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case ldc2_w:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case lload:
-                    fprintf(fout, "%d", *(++code)); //index
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case lstore:
-                    fprintf(fout, "%d", *(++code)); //index
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case multianewarray:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     fprintf(fout, " dim %d", *(++code)); //dimensions
                     break;
                 case new:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case newarray:
                     fprintf(fout, "%s", tiponewarray_conteudo[*(++code)]); //string referente a codificacao do tipo em questao
                     break;
                 case putfield:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case putstatic:
-                    fprintf(fout, "#%d", *(++code)); //indexbyte1
-                    fprintf(fout, "%d", *(++code)); //indexbyte2
+                    byte_aux = *(++code); //byte1 de index
+                    byte_aux = byte_aux << 8; //shift de index
+                    byte_aux += *(++code); //byte2 de index
+                    fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     break;
                 case ret:
-                    fprintf(fout, "%d", *(++code)); //index
+                    fprintf(fout, "#%d", *(++code)); //index
                     break;
                 case sipush:
-                    fprintf(fout, "%d", *(++code)); //byte1
-                    fprintf(fout, "%d", *(++code)); //byte2
+                    byte_aux = *(++code); //byte1
+                        byte_aux = byte_aux << 8; //shift
+                        byte_aux += *(++code); //byte2
+                        fprintf(fout, "%ld", byte_aux); //print
                     break;
                 case wide:
                     if ((*(++code)) == iinc) { //caso o proximo byte seja iinc
-                        fprintf(fout, "#%d", *(++code)); //indexbyte1
-                        fprintf(fout, "%d", *(++code)); //indexbyte2
-                        fprintf(fout, "%d", *(++code)); //constbyte1
-                        fprintf(fout, "%d", *(++code)); //constbyte2
-                        //REVER - CONCATENAR BYTES DA CONSTANTE ANTES DE PRINTAR
+                        byte_aux = *(++code); //byte1 de index
+                        byte_aux = byte_aux << 8; //shift de index
+                        byte_aux += *(++code); //byte2 de index
+                        fprintf(fout, "#%ld", byte_aux); //print indexbyte
+                        
+                        byte_aux = *(++code); //byte1 de constante
+                        byte_aux = byte_aux << 8; //shift de constante
+                        byte_aux += *(++code); //byte2 de constante
+                        fprintf(fout, " const %ld", byte_aux); //print constante
                     }
                     else {
-                        fprintf(fout, "#%d", *(++code)); //indexbyte1
-                        fprintf(fout, "%d", *(++code)); //indexbyte2
+                        byte_aux = *(++code); //byte1 de index
+                        byte_aux = byte_aux << 8; //shift de index
+                        byte_aux += *(++code); //byte2 de index
+                        fprintf(fout, "#%ld", byte_aux); //print indexbyte
                     }
                     break;
 
