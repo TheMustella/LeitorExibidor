@@ -243,6 +243,7 @@ enum instrucoes_code { //10 instrucoes por linha
         fprintf(fout, "\tCODE_LENGTH: %u\n", att->type.Code.code_length);
         fprintf(fout, "\tCODE:\n");
         u1* code;
+        cp_info* cp;
         for (code = att->type.Code.code; code < att->type.Code.code + att->type.Code.code_length; ++code) {
             //fprintf(fout, "\t\t%d | %02x | ", (int) (code - (att->type.Code.code)), *code); //printa o codigo em hexa da instrucao e a instrucao em questao
             fprintf(fout, "\t\t%ld | ", (code - (att->type.Code.code))); //printa a instrucao sem o codigo em hexa
@@ -444,7 +445,10 @@ enum instrucoes_code { //10 instrucoes por linha
                     half_aux = *(++code); //byte1 de index
                     half_aux = half_aux << 8; //shift de index
                     half_aux += *(++code); //byte2 de index
-                    fprintf(fout, "#%d", half_aux); //print indexbyte
+                    cp = cf->constant_pool + half_aux - 1;
+                    fprintf(fout, "#%d <%s.%s>", half_aux, 
+                        (char*)cf->constant_pool[cf->constant_pool[cp->info.Method_info.class_index - 1].info.Class_info.name_index - 1].info.Utf8_info.bytes, 
+						(char*)cf->constant_pool[cf->constant_pool[cp->info.Method_info.name_and_type_index - 1].info.NameAndType_info.name_index - 1].info.Utf8_info.bytes); //print indexbyte
                     break;
                 case invokestatic:
                     half_aux = *(++code); //byte1 de index
@@ -509,7 +513,8 @@ enum instrucoes_code { //10 instrucoes por linha
                     half_aux = *(++code); //byte1 de index
                     half_aux = half_aux << 8; //shift de index
                     half_aux += *(++code); //byte2 de index
-                    fprintf(fout, "#%d", half_aux); //print indexbyte
+                    cp = cf->constant_pool +  half_aux - 1;
+                    fprintf(fout, "#%d, <%s>", half_aux, (char*)cf->constant_pool[cp->info.Class_info.name_index - 1].info.Utf8_info.bytes); //print indexbyte
                     break;
                 case newarray:
                     fprintf(fout, "%s", tiponewarray_conteudo[*(++code)]); //string referente a codificacao do tipo em questao
