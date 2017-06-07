@@ -84,7 +84,7 @@ void load_classdata(ClassFile* cf, FILE* fd) {
 
 void load_interfaces(ClassFile* cf, FILE* fd) {
     cf->interfaces_count = u2Read(fd);
-    if (cf->interfaces_count <= 0) {
+    if (cf->interfaces_count == 0) {
         cf->interfaces = NULL;
         return;
     }
@@ -103,7 +103,7 @@ void load_code_attr(attribute_info* att, ClassFile* cf, FILE* fd) {
     att->type.Code.max_stack = u2Read(fd);
     att->type.Code.max_locals = u2Read(fd);
     att->type.Code.code_length = u4Read(fd);
-    if (att->type.Code.code_length <= 0) {
+    if (att->type.Code.code_length == 0) {
         att->type.Code.code = NULL;
     } else {
         att->type.Code.code = (u1*)calloc(att->type.Code.code_length, sizeof(u1));
@@ -113,7 +113,7 @@ void load_code_attr(attribute_info* att, ClassFile* cf, FILE* fd) {
         }
     }
     att->type.Code.exception_table_length = u2Read(fd);
-    if (att->type.Code.exception_table_length <= 0) {
+    if (att->type.Code.exception_table_length == 0) {
         att->type.Code.exception_table = NULL;
     } else {
         att->type.Code.exception_table = (exception_table_info*)calloc(att->type.Code.exception_table_length,sizeof(exception_table_info));
@@ -126,7 +126,7 @@ void load_code_attr(attribute_info* att, ClassFile* cf, FILE* fd) {
         }
     }
     att->type.Code.attributes_count = u2Read(fd);
-    if (att->type.Code.attributes_count <= 0) {
+    if (att->type.Code.attributes_count == 0) {
         att->type.Code.attributes = NULL;
     } else {
         att->type.Code.attributes = (attribute_info*)calloc(att->type.Code.attributes_count,sizeof(attribute_info));
@@ -139,7 +139,7 @@ void load_code_attr(attribute_info* att, ClassFile* cf, FILE* fd) {
 
 void load_exceptions_attr(attribute_info* att, FILE* fd) {
     att->type.Exceptions.number_of_exceptions = u2Read(fd);
-    if (att->type.Exceptions.number_of_exceptions <= 0) {
+    if (att->type.Exceptions.number_of_exceptions == 0) {
         att->type.Exceptions.exception_index_table = NULL;
     } else {
         att->type.Exceptions.exception_index_table = (u2*) calloc(att->type.Exceptions.number_of_exceptions,sizeof(u2));
@@ -152,7 +152,7 @@ void load_exceptions_attr(attribute_info* att, FILE* fd) {
 
 void load_innerclasses_attr(attribute_info* att, FILE* fd) {
     att->type.InnerClasses.number_of_classes = u2Read(fd);
-    if (att->type.InnerClasses.number_of_classes <= 0) {
+    if (att->type.InnerClasses.number_of_classes == 0) {
         att->type.InnerClasses.classes = NULL;
         return;
     }
@@ -167,7 +167,7 @@ void load_innerclasses_attr(attribute_info* att, FILE* fd) {
 }
 
 void load_other_attr(attribute_info* att, FILE* fd) {
-    if (att->attribute_length <= 0) {
+    if (att->attribute_length == 0) {
         att->type.Other.bytes = NULL;
         return;
     }
@@ -207,7 +207,7 @@ void load_attribute(attribute_info* att, ClassFile* cf, FILE* fd) {
 
   void load_fields(ClassFile* cf, FILE* fd) {
       cf->fields_count = u2Read(fd);
-      if (cf->fields_count <= 0) {
+      if (cf->fields_count == 0) {
           cf->fields = NULL;
           return;
       }
@@ -228,7 +228,7 @@ void load_attribute(attribute_info* att, ClassFile* cf, FILE* fd) {
 
   void load_methods(ClassFile* cf, FILE* fd) {
       cf->method_count = u2Read(fd);
-      if (cf->method_count <= 0) {
+      if (cf->method_count == 0) {
           cf->methods = NULL;
           return;
       }
@@ -249,7 +249,7 @@ void load_attribute(attribute_info* att, ClassFile* cf, FILE* fd) {
 
   void load_attributes(ClassFile* cf, FILE* fd) {
       cf->attributes_count = u2Read(fd);
-      if (cf->attributes_count <= 0) {
+      if (cf->attributes_count == 0) {
           cf->attributes = NULL;
           return;
       }
